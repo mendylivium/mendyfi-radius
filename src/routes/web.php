@@ -166,6 +166,10 @@ Route::group([
                 Route::get('add', App\Livewire\Client\FairUsePolicy\AddFup::class)->name('client.fairuse.add');
                 Route::get('edit-{id}', App\Livewire\Client\FairUsePolicy\EditFup::class)->name('client.fairuse.edit');
             });
+
+            Route::group(['prefix' => 'settings'], function(){
+                Route::get('branding', App\Livewire\Client\Settings\Branding::class)->name('client.settings.branding');
+            });
     
         });
         

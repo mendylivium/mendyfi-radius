@@ -39,7 +39,7 @@
                         @enderror
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label class="text text-xs mb-0">Price:</label>
                                 <div class="input-group">
@@ -56,7 +56,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label class="text text-xs mb-0">Uptime Limit:</label>
                                 <div class="input-group">
@@ -71,7 +71,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label class="text text-xs mb-0">Validity:</label>
                                 <div class="input-group">
@@ -87,7 +87,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label class="text text-xs mb-0">Max Download Speed:</label>
                                 <div class="input-group">
@@ -103,7 +103,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label class="text text-xs mb-0">Max Upload Speed:</label>
                                 <div class="input-group">
@@ -119,7 +119,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label class="text text-xs mb-0">Data Limit:</label>
                                 <div class="input-group">
@@ -139,8 +139,8 @@
                         <span class="text text-xs text-danger">{{ $message }}</span>
                     @enderror
                     <hr>
-                    <div class="d-flex justify-content-start">
-                        <a class="btn btn-secondary mr-2" href="{{ route('client.vouchers.profiles') }}">Cancel</a>
+                    <div class="d-flex flex-column flex-md-row justify-content-start">
+                        <a class="btn btn-secondary mr-md-2 mb-2 mb-md-0" href="{{ route('client.vouchers.profiles') }}">Cancel</a>
                         <button class="btn btn-primary" type="submit">Create</button>
                     </div>
                 </form>

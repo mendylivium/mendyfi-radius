@@ -12,7 +12,7 @@ services:
         - GID=${GID:-1000}
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8045:80"
       - "8090:80"
     volumes:
       - ./src:/var/www/html:delegated

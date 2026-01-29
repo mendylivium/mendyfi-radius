@@ -1,45 +1,63 @@
 <div class="row">
     <div class="col-12">
+        <x-partials.flash />
+    </div>
+    <div class="col-12">
         <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Policies</h6>
-                <div class="card-tools">
-                    <a class="btn btn-sm btn-primary" href="{{ route('client.fairuse.add') }}"><i
-                            class="fas fa-plus mr-1"></i>Add Policy</a>
+            <div class="card-header card-header-standard">
+                <h6 class="card-title">
+                    <i class="fas fa-shield-alt"></i>Fair Use Policies
+                    <span class="badge badge-primary">{{ $this->policies->count() }}</span>
+                </h6>
+                <div class="card-actions">
+                    <a class="btn btn-action btn-action-primary" href="{{ route('client.fairuse.add') }}">
+                        <i class="fas fa-plus"></i>Add Policy
+                    </a>
                 </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table-bordered table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
+                    <table class="table table-standard table-striped">
                         <thead>
-                            <tr style="font-size:0.8rem;">
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Resets</th>
-                                <th>Action</th>
+                            <tr>
+                                <th style="width: 80px;">ID</th>
+                                <th>Policy Name</th>
+                                <th>Reset Interval</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="text text-xs text-nowrap">
+                        <tbody>
                             @forelse ($this->policies as $policy)
                                 <tr>
-                                    <td>{{ $policy->id }}</td>
-                                    <td>{{ $policy->name }}</td>
-                                    <td>{{ $policy->resets_every }} Mins</td>
-                                    <td style="min-width: 170px;width: 180px;">
-                                        <div class="btn-group btn-group-sm">
+                                    <td><span class="info-value font-weight-bold">{{ $policy->id }}</span></td>
+                                    <td>
+                                        <span class="badge badge-profile">{{ $policy->name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">
+                                            <i class="fas fa-clock mr-1"></i>{{ $policy->resets_every }} Minutes
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-action-group">
                                             <a href="{{ route('client.fairuse.edit', $policy->id) }}"
-                                                class="btn btn-info">
-                                                <li class="fas fa-edit mr-2"></li>Edit
+                                                class="btn btn-action btn-action-edit">
+                                                <i class="fas fa-edit"></i>Edit
                                             </a>
-                                            <button class="btn btn-danger" wire:click="delete({{ $policy->id }})">
-                                                <li class="fas fa-trash mr-2"></li>Delete
+                                            <button class="btn btn-action btn-action-delete" 
+                                                wire:click="delete({{ $policy->id }})"
+                                                wire:confirm="Are you sure you want to delete this policy?">
+                                                <i class="fas fa-trash"></i>Delete
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4">NO FUP</td>
+                                    <td colspan="4" class="table-empty-state">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <p>No fair use policies defined</p>
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use App\Models\HotspotVouchers;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
 
 class Active extends Component
 {
@@ -17,6 +18,96 @@ class Active extends Component
 
     protected $paginationTheme = 'bootstrap';
     public $search = '';
+    public $autoRefresh = false;
+
+    // Multi-select properties
+    public $selectedItems = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedItems = $this->voucher->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedItems = [];
+        }
+    }
+
+    public function updatedSelectedItems()
+    {
+        $this->selectAll = count($this->selectedItems) === $this->voucher->count();
+    }
+
+    public function bulkDisconnect()
+    {
+        if (empty($this->selectedItems)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No vouchers selected!'
+            ]);
+        }
+
+        $disconnected = 0;
+        $failed = 0;
+
+        foreach ($this->selectedItems as $id) {
+            $hotspotUser = HotspotVouchers::where([
+                'id' => $id,
+                'connected' => true
+            ])->first();
+
+            if ($hotspotUser) {
+                $coaResult = $this->radiusCoa('disconnect', [
+                    'User-Name' => $hotspotUser->code,
+                    'Framed-IP-Address' => $hotspotUser->ip_address,
+                ],
+                $this->user->api_secret,
+                $hotspotUser->router_ip);
+
+                if ($coaResult) {
+                    $disconnected++;
+                } else {
+                    $failed++;
+                }
+            }
+        }
+
+        $this->selectedItems = [];
+        $this->selectAll = false;
+
+        $this->showFlash([
+            'type' => $failed > 0 ? 'warning' : 'success',
+            'message' => "{$disconnected} user(s) disconnected" . ($failed > 0 ? ", {$failed} failed" : "")
+        ]);
+    }
+
+    public function bulkDelete()
+    {
+        if (empty($this->selectedItems)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No vouchers selected!'
+            ]);
+        }
+
+        HotspotVouchers::whereIn('id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        $count = count($this->selectedItems);
+        $this->selectedItems = [];
+        $this->selectAll = false;
+
+        $this->showFlash([
+            'type' => 'danger',
+            'message' => "{$count} active voucher(s) deleted!"
+        ]);
+    }
+
+    public function toggleAutoRefresh()
+    {
+        $this->autoRefresh = !$this->autoRefresh;
+    }
 
     public function updatedSearch()
     {
@@ -27,6 +118,68 @@ class Active extends Component
     public function user()
     {
         return auth()->user();
+    }
+
+    public function getTimeRemaining($voucher)
+    {
+        if (!$voucher->expire_date) {
+            return null;
+        }
+
+        $now = Carbon::now();
+        $expiry = Carbon::parse($voucher->expire_date);
+
+        if ($now->gt($expiry)) {
+            return ['text' => 'Expired', 'seconds' => 0];
+        }
+
+        $diff = $now->diff($expiry);
+        $totalSeconds = $expiry->timestamp - $now->timestamp;
+
+        $parts = [];
+        if ($diff->d > 0) $parts[] = $diff->d . 'd';
+        if ($diff->h > 0) $parts[] = $diff->h . 'h';
+        if ($diff->i > 0) $parts[] = $diff->i . 'm';
+        if (empty($parts)) $parts[] = $diff->s . 's';
+
+        return ['text' => implode(' ', $parts), 'seconds' => $totalSeconds];
+    }
+
+    public function getTimePercentage($voucher)
+    {
+        if (!$voucher->expire_date || !$voucher->used_date) {
+            return null;
+        }
+
+        $start = Carbon::parse($voucher->used_date);
+        $end = Carbon::parse($voucher->expire_date);
+        $now = Carbon::now();
+
+        $total = $end->timestamp - $start->timestamp;
+        $remaining = $end->timestamp - $now->timestamp;
+
+        if ($total <= 0) return 0;
+        if ($remaining <= 0) return 0;
+
+        return min(100, max(0, ($remaining / $total) * 100));
+    }
+
+    public function getDataPercentage($voucher)
+    {
+        if (!$voucher->data_limit || $voucher->data_limit <= 0) {
+            return null;
+        }
+
+        $remaining = $voucher->data_credit ?? 0;
+        return min(100, max(0, ($remaining / $voucher->data_limit) * 100));
+    }
+
+    public function getStatusColor($percentage)
+    {
+        if ($percentage === null) return 'secondary';
+        if ($percentage > 50) return 'success';
+        if ($percentage > 25) return 'warning';
+        return 'danger';
     }
 
     #[Computed()]

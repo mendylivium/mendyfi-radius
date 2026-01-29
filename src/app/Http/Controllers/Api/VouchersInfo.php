@@ -97,141 +97,172 @@ class VouchersInfo extends Controller
 
         if(!$templates) {
             $styleHTML = <<<'HTML'
-        
+            * { box-sizing: border-box; margin: 0; padding: 0; }
             body {
-                color: #000000;
-                background-color: #FFFFFF;
-                font-size: 14px;
-                font-family: 'Helvetica', arial, sans-serif;
-                margin: 0px;
+                color: #333;
+                background: #fff;
+                font-size: 10px;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 5px;
                 -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-
-            table.voucher {
+            .voucher-card {
                 display: inline-block;
-                border: 2px solid black;
-                margin: 2px;
+                width: 170px;
+                margin: 3px;
+                border-radius: 8px;
+                overflow: hidden;
+                border: 1px solid #dee2e6;
+                vertical-align: top;
+                background: #fff;
             }
-
-            @page {
-                size: auto;
-                margin-left: 7mm;
-                margin-right: 3mm;
-                margin-top: 9mm;
-                margin-bottom: 3mm;
+            .voucher-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 6px 8px;
+                text-align: center;
             }
-
+            .voucher-header .profile-name {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .voucher-header .price-tag {
+                font-size: 14px;
+                font-weight: 800;
+                margin-top: 2px;
+            }
+            .voucher-body {
+                padding: 6px 8px;
+                text-align: center;
+            }
+            .qr-container {
+                display: inline-block;
+                margin-bottom: 4px;
+            }
+            .qr-container img { width: 55px; height: 55px; }
+            .code-section {
+                background: #f0f0f0;
+                border-radius: 4px;
+                padding: 4px 6px;
+                margin-bottom: 4px;
+            }
+            .code-label {
+                font-size: 7px;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .code-value {
+                font-size: 14px;
+                font-weight: 800;
+                color: #333;
+                font-family: 'Courier New', monospace;
+                letter-spacing: 2px;
+            }
+            .password-section {
+                background: #fff3cd;
+                border-radius: 4px;
+                padding: 3px 6px;
+                margin-bottom: 4px;
+                border: 1px dashed #ffc107;
+            }
+            .password-value {
+                font-size: 11px;
+                font-weight: 700;
+                color: #856404;
+                font-family: 'Courier New', monospace;
+            }
+            .info-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 3px;
+            }
+            .info-item {
+                flex: 1 0 45%;
+                background: #f8f8f8;
+                border-radius: 3px;
+                padding: 3px 4px;
+                text-align: center;
+            }
+            .info-item .label {
+                font-size: 7px;
+                color: #888;
+                text-transform: uppercase;
+            }
+            .info-item .value {
+                font-size: 9px;
+                font-weight: 600;
+                color: #333;
+            }
+            .voucher-footer {
+                padding: 4px;
+                text-align: center;
+                border-top: 1px dashed #ddd;
+            }
+            .voucher-footer small {
+                color: #999;
+                font-size: 7px;
+            }
+            @page { size: auto; margin: 5mm; }
             @media print {
-                table {
-                    page-break-after: auto
-                }
-
-                tr {
+                body { padding: 0; }
+                .voucher-card {
                     page-break-inside: avoid;
-                    page-break-after: auto
-                }
-
-                td {
-                    page-break-inside: avoid;
-                    page-break-after: auto
-                }
-
-                thead {
-                    display: table-header-group
-                }
-
-                tfoot {
-                    display: table-footer-group
+                    box-shadow: none;
+                    border: 1px solid #999;
                 }
             }
-
-            #num {
-                float: right;
-                display: inline-block;
-            }
-
-            .qrc {
-                width: 30px;
-                height: 30px;
-                margin-top: 1px;
-            }
-       
         HTML;
 
         $bodyHTML = <<<'HTML'
-        <table class="voucher" style=" width: 160px;">
-                <tbody>
-
-                    <tr style="background-color: black;">
-                        <td style="text-align: left; font-size: 14px; font-weight:bold;color: white;">
-                            <span x-text="voucher.profile"></span><span x-text="voucher.id" id="num"></span>
-                        </td>
-                    </tr>
-                    <tr>
-
-                        <td>
-                            <table style=" text-align: center; width: 150px;">
-                                <tbody>
-                                    <tr style="color: black; font-size: 11px;">
-                                        <td>
-                                            <table style="width:100%;">
-                                                <!-- Username = Password    -->
-                                                <tr>
-                                                <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=75x75&data=' + voucher.code" />
-                                                </tr>
-                                                <tr>
-                                                    <td>VOUCHER CODE</td>
-                                                </tr>
-                                                <tr style="color: black; font-size: 14px;">
-                                                    <td style="width:100%; border: 1px solid black; font-weight:bold;">
-                                                        <span x-text="voucher.code"></span>
-                                                    </td>
-                                                </tr>
-
-                                                <tr x-show="voucher.password">
-                                                    <td>PASSWORD</td>
-                                                </tr>
-                                                <tr  x-show="voucher.password" style="color: black; font-size: 14px;">
-                                                    <td style="width:100%; border: 1px solid black; font-weight:bold;">
-                                                        <span x-text="voucher.password"></span>
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td colspan="2"
-                                                        style="border: 1px solid black; font-weight:bold;">
-                                                        Price <span x-text="voucher.price"></span></td>
-                                                </tr>
-                                                <tr x-show="voucher.time_limit">
-                                                    <td colspan="2"
-                                                        style="border: 1px solid black; font-weight:bold;">
-                                                        Time Limit: <span x-text="voucher.time_limit"></span>
-                                                    </td>
-                                                </tr>
-                                                <tr x-show="voucher.validity">
-                                                    <td colspan="2"
-                                                        style="border: 1px solid black; font-weight:bold;">
-                                                        Validity: <span x-text="voucher.validity"></span>
-                                                    </td>
-                                                </tr>
-
-
-                                                <!-- /  -->
-                                                <!-- Username & Password  -->
-
-
-                                                <!-- /  -->
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </td>
-
-                    </tr>
-
-                </tbody>
-            </table>
+            <div class="voucher-card">
+                <div class="voucher-header">
+                    <div class="profile-name" x-text="voucher.profile"></div>
+                    <div class="price-tag">$<span x-text="voucher.price"></span></div>
+                </div>
+                <div class="voucher-body">
+                    <div class="qr-container">
+                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=' + voucher.code" alt="QR" />
+                    </div>
+                    <div class="code-section">
+                        <div class="code-label">Voucher Code</div>
+                        <div class="code-value" x-text="voucher.code"></div>
+                    </div>
+                    <template x-if="voucher.password">
+                        <div class="password-section">
+                            <div class="code-label">Password</div>
+                            <div class="password-value" x-text="voucher.password"></div>
+                        </div>
+                    </template>
+                    <div class="info-grid">
+                        <template x-if="voucher.time_limit">
+                            <div class="info-item">
+                                <div class="label">Time</div>
+                                <div class="value" x-text="voucher.time_limit"></div>
+                            </div>
+                        </template>
+                        <template x-if="voucher.validity">
+                            <div class="info-item">
+                                <div class="label">Valid For</div>
+                                <div class="value" x-text="voucher.validity"></div>
+                            </div>
+                        </template>
+                        <template x-if="voucher.speed_max_download && voucher.speed_max_download !== 'Unlimitedps'">
+                            <div class="info-item">
+                                <div class="label">Speed</div>
+                                <div class="value" x-text="voucher.speed_max_download"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="voucher-footer">
+                    <small>Connect to WiFi &bull; Enter code &bull; Enjoy!</small>
+                </div>
+            </div>
         HTML;
         } else {
             $bodyHTML = $templates->body;

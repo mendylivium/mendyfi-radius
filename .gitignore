@@ -9,3 +9,6 @@ backups/central/*.sql
 docker-data
 src/app/Http/Controllers/Test/*
 *.sql
+# Environment files
+src/.env
+.env

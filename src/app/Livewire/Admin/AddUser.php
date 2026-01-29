@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use Livewire\Component;
 use App\Models\AppSetting;
 use Illuminate\Support\Str;
+use App\Services\TenantDefaultsSeeder;
 
 class AddUser extends Component
 {
@@ -37,7 +38,7 @@ class AddUser extends Component
 
         tenancy()->initialize($newTenant);
 
-        User::create([
+        $admin = User::create([
             'name'          =>  'Administrator',
             'username'      =>  $this->userName,
             'password'      =>  $hashedPassword,
@@ -55,12 +56,15 @@ class AddUser extends Component
             ['name' =>  'RADIUS_INTERIM', 'value' => '1'],
         ]);
 
+        // Seed default hotspot profiles and voucher templates
+        TenantDefaultsSeeder::seed($admin->id);
+
         return redirect()->route('admin.dashboard')
         ->with([
             'type' => 'success',
             'message' => 'Tenant Created!'
         ]);
-        
+
     }
 
     public function render()

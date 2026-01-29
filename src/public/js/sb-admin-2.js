@@ -5,21 +5,26 @@
   $("#sidebarToggle, #sidebarToggleTop").on('click', function(e) {
     $("body").toggleClass("sidebar-toggled");
     $(".sidebar").toggleClass("toggled");
-    if ($(".sidebar").hasClass("toggled")) {
+    // On desktop (>991px), hide collapses when collapsing sidebar
+    if ($(".sidebar").hasClass("toggled") && $(window).width() > 991) {
+      $('.sidebar .collapse').collapse('hide');
+    };
+    // On mobile (<= 991px), hide collapses when CLOSING sidebar (removing toggled)
+    if (!$(".sidebar").hasClass("toggled") && $(window).width() <= 991) {
       $('.sidebar .collapse').collapse('hide');
     };
   });
 
-  // Close any open menu accordions when window is resized below 768px
+  // Close any open menu accordions when window is resized
   $(window).resize(function() {
     if ($(window).width() < 768) {
       $('.sidebar .collapse').collapse('hide');
     };
     
-    // Toggle the side navigation when window is resized below 480px
-    if ($(window).width() < 480 && !$(".sidebar").hasClass("toggled")) {
-      $("body").addClass("sidebar-toggled");
-      $(".sidebar").addClass("toggled");
+    // Close sidebar on mobile when resizing to small
+    if ($(window).width() < 480 && $(".sidebar").hasClass("toggled")) {
+      $("body").removeClass("sidebar-toggled");
+      $(".sidebar").removeClass("toggled");
       $('.sidebar .collapse').collapse('hide');
     };
   });

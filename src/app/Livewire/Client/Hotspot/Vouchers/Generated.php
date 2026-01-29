@@ -22,6 +22,101 @@ class Generated extends Component
     public $searchVC = '',
     $searchBATCH = '';
 
+    // Multi-select properties for vouchers
+    public $selectedVouchers = [];
+    public $selectAllVouchers = false;
+
+    // Multi-select properties for batches
+    public $selectedBatches = [];
+    public $selectAllBatches = false;
+
+    // Selected batch for printing
+    public $selectedBatchForPrint = null;
+
+    public function updatedSelectAllVouchers($value)
+    {
+        if ($value) {
+            $this->selectedVouchers = $this->vouchers->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedVouchers = [];
+        }
+    }
+
+    public function updatedSelectedVouchers()
+    {
+        $this->selectAllVouchers = count($this->selectedVouchers) === $this->vouchers->count();
+    }
+
+    public function updatedSelectAllBatches($value)
+    {
+        if ($value) {
+            $this->selectedBatches = $this->batches->pluck('batch_code')->map(fn($code) => (string) $code)->toArray();
+        } else {
+            $this->selectedBatches = [];
+        }
+    }
+
+    public function updatedSelectedBatches()
+    {
+        $this->selectAllBatches = count($this->selectedBatches) === $this->batches->count();
+    }
+
+    public function bulkDeleteVouchers()
+    {
+        if (empty($this->selectedVouchers)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No vouchers selected!'
+            ]);
+        }
+
+        HotspotVouchers::whereIn('id', $this->selectedVouchers)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        $count = count($this->selectedVouchers);
+        $this->selectedVouchers = [];
+        $this->selectAllVouchers = false;
+
+        $this->showFlash([
+            'type' => 'danger',
+            'message' => "{$count} voucher(s) deleted!"
+        ]);
+    }
+
+    public function bulkDeleteBatches()
+    {
+        if (empty($this->selectedBatches)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No batches selected!'
+            ]);
+        }
+
+        HotspotVouchers::whereIn('batch_code', $this->selectedBatches)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        $count = count($this->selectedBatches);
+        $this->selectedBatches = [];
+        $this->selectAllBatches = false;
+
+        $this->showFlash([
+            'type' => 'danger',
+            'message' => "{$count} batch(es) deleted!"
+        ]);
+    }
+
+    public function getSelectedVouchersForPrint()
+    {
+        return implode(',', $this->selectedVouchers);
+    }
+
+    public function getSelectedBatchesForPrint()
+    {
+        return implode(',', $this->selectedBatches);
+    }
+
     public function updatedSearch()
     {
         $this->resetPage();

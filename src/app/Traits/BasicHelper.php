@@ -227,4 +227,27 @@ trait BasicHelper
         $response = file_get_contents("http://ipinfo.io/ip");
         return trim($response);
     }
+
+    /**
+     * Adjust the brightness of a hex color
+     * @param string $hex Hex color code (e.g., #4e73df)
+     * @param int $steps Positive for lighter, negative for darker
+     * @return string Adjusted hex color
+     */
+    function adjustBrightness($hex, $steps) {
+        // Remove # if present
+        $hex = ltrim($hex, '#');
+        
+        // Convert to RGB
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        
+        // Adjust brightness
+        $r = max(0, min(255, $r + $steps));
+        $g = max(0, min(255, $g + $steps));
+        $b = max(0, min(255, $b + $steps));
+        
+        return sprintf('#%02x%02x%02x', $r, $g, $b);
+    }
 }

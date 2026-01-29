@@ -18,6 +18,52 @@ class Profile extends Component
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
 
+    // Multi-select properties
+    public $selectedItems = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedItems = $this->profiles->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedItems = [];
+        }
+    }
+
+    public function updatedSelectedItems()
+    {
+        $this->selectAll = count($this->selectedItems) === $this->profiles->count();
+    }
+
+    public function bulkDelete()
+    {
+        if (empty($this->selectedItems)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No profiles selected!'
+            ]);
+        }
+
+        // Delete associated vouchers first
+        HotspotVouchers::whereIn('hotspot_profile_id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        // Delete profiles
+        HotspotProfile::whereIn('id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        $count = count($this->selectedItems);
+        $this->selectedItems = [];
+        $this->selectAll = false;
+
+        $this->showFlash([
+            'type' => 'danger',
+            'message' => "{$count} profile(s) and their vouchers deleted!"
+        ]);
+    }
 
     public function deleteProfile($id)
     {

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
+use App\Services\TenantDefaultsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -37,5 +38,7 @@ class DatabaseSeeder extends Seeder
             ['name' =>  'RADIUS_INTERIM', 'value' => '1'],
         ]);
 
-    } 
+        // Seed default hotspot profiles and voucher templates
+        TenantDefaultsSeeder::seed($admin->id);
+    }
 }

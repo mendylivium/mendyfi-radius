@@ -5,6 +5,7 @@ namespace App\Livewire\Client\Reseller;
 use Livewire\Component;
 use App\Models\Reseller;
 use App\Traits\BasicHelper;
+use Livewire\WithPagination;
 use Illuminate\Support\Carbon;
 use App\Models\HotspotVouchers;
 use Livewire\Attributes\Computed;
@@ -13,10 +14,105 @@ use Illuminate\Support\Facades\DB;
 class ResellerList extends Component
 {
     use BasicHelper;
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
     
     public $searchStr = "";
 
-    
+    // Multi-select properties
+    public $selectedItems = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedItems = $this->resellers->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedItems = [];
+        }
+    }
+
+    public function updatedSelectedItems()
+    {
+        $this->selectAll = count($this->selectedItems) === $this->resellers->count();
+    }
+
+    public function bulkDelete()
+    {
+        if (empty($this->selectedItems)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No resellers selected!'
+            ]);
+        }
+
+        // Delete associated vouchers first
+        HotspotVouchers::whereIn('reseller_id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        // Delete resellers
+        Reseller::whereIn('id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->delete();
+
+        $count = count($this->selectedItems);
+        $this->selectedItems = [];
+        $this->selectAll = false;
+
+        $this->showFlash([
+            'type' => 'warning',
+            'message' => "{$count} reseller(s) and their vouchers deleted!"
+        ]);
+    }
+
+    public function bulkEnable()
+    {
+        if (empty($this->selectedItems)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No resellers selected!'
+            ]);
+        }
+
+        Reseller::whereIn('id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->update(['status' => 'active']);
+
+        $count = count($this->selectedItems);
+        $this->selectedItems = [];
+        $this->selectAll = false;
+
+        $this->showFlash([
+            'type' => 'success',
+            'message' => "{$count} reseller(s) enabled!"
+        ]);
+    }
+
+    public function bulkDisable()
+    {
+        if (empty($this->selectedItems)) {
+            return $this->showFlash([
+                'type' => 'warning',
+                'message' => 'No resellers selected!'
+            ]);
+        }
+
+        Reseller::whereIn('id', $this->selectedItems)
+            ->where('user_id', $this->user->id)
+            ->update(['status' => 'suspended']);
+
+        $count = count($this->selectedItems);
+        $this->selectedItems = [];
+        $this->selectAll = false;
+
+        $this->showFlash([
+            'type' => 'warning',
+            'message' => "{$count} reseller(s) suspended!"
+        ]);
+    }
+
     #[Computed()]
     public function user()
     {
@@ -71,7 +167,14 @@ class ResellerList extends Component
             $query->where('user_id', $this->user->id);
 
             if(!empty($this->searchStr)) {
-                $query->whereRaw("(`name` like '%{$this->searchStr}%' OR `id` = '{$this->searchStr}' OR `email` like '%{$this->searchStr}%' OR `mobile` like '%{$this->searchStr}%' OR `address_name` like '%{$this->searchStr}%')");
+                $searchTerm = '%' . $this->searchStr . '%';
+                $query->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'like', $searchTerm)
+                      ->orWhere('id', '=', $this->searchStr)
+                      ->orWhere('email', 'like', $searchTerm)
+                      ->orWhere('mobile', 'like', $searchTerm)
+                      ->orWhere('address_name', 'like', $searchTerm);
+                });
             }
         })
         // ->where([

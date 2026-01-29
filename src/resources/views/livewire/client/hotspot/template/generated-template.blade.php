@@ -1,59 +1,69 @@
 <div class="row">
     <div class="col-12">
+        <x-partials.flash />
+    </div>
+    <div class="col-12">
         <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Vouchers Templates</h6>
-                <div class="card-tools">
-                    <a class="btn btn-sm btn-primary" href="{{ route('client.voucher.template.create') }}"><i
-                            class="fas fa-plus mr-1"></i>Create</a>
+            <div class="card-header card-header-standard">
+                <h6 class="card-title">
+                    <i class="fas fa-palette"></i>Voucher Templates
+                    <span class="badge badge-primary">{{ $this->templates->total() }}</span>
+                </h6>
+                <div class="card-actions">
+                    <a class="btn btn-action btn-action-primary" href="{{ route('client.voucher.template.create') }}">
+                        <i class="fas fa-plus"></i>Create Template
+                    </a>
                 </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table-bordered table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
+                    <table class="table table-standard table-striped">
                         <thead>
-                            <tr style="font-size:0.8rem;">
-                                <th>Name</th>
-                                <th>Created On</th>
-                                <th>Updated On</th>
-                                <th>Action</th>
+                            <tr>
+                                <th>Template Name</th>
+                                <th class="hide-mobile">Created On</th>
+                                <th class="hide-mobile">Updated On</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="text text-xs text-nowrap">
+                        <tbody>
                             @forelse ($this->templates as $template)
                                 <tr>
                                     <td>
-                                        {{ $template->name }}
+                                        <span class="info-value font-weight-bold">{{ $template->name }}</span>
+                                    </td>
+                                    <td class="hide-mobile">
+                                        <span class="info-value-muted">
+                                            {{ $template->created_at->format('M d, Y h:i A') }}
+                                        </span>
+                                    </td>
+                                    <td class="hide-mobile">
+                                        <span class="info-value-muted">
+                                            {{ $template->updated_at->format('M d, Y h:i A') }}
+                                        </span>
                                     </td>
                                     <td>
-                                        {{ $template->created_at }}
-                                    </td>
-                                    <td>
-                                        {{ $template->updated_at }}
-                                    </td>
-                                    <td style="min-width: 170px;width: 180px;">
-                                        <div class="d-flex justify-content-center align-item-center">
-                                            <div class="btn-group">
-
-                                                <a href="{{ route('client.voucher.template.edit', $template->id) }}"
-                                                    class="btn btn-sm btn-warning">
-                                                    <li class="fas fa-edit mr-1"></li>Edit
-                                                </a>
-                                                <button class="btn btn-sm btn-danger shadow"
-                                                    wire:confirm.prompt="Are you sure?\n\nType {{ $template->id }} to confirm|{{ $template->id }}"
-                                                    wire:click="deleteTemplate({{ $template->id }})"><i
-                                                        class="fas fa-trash mr-2"></i>Delete</button>
-                                            </div>
+                                        <div class="btn-action-group">
+                                            <a href="{{ route('client.voucher.template.edit', $template->id) }}"
+                                                class="btn btn-action btn-action-edit">
+                                                <i class="fas fa-edit"></i>Edit
+                                            </a>
+                                            <button class="btn btn-action btn-action-delete"
+                                                wire:confirm.prompt="Are you sure?\n\nType {{ $template->id }} to confirm|{{ $template->id }}"
+                                                wire:click="deleteTemplate({{ $template->id }})">
+                                                <i class="fas fa-trash"></i>Delete
+                                            </button>
                                         </div>
-
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4">NO TEMPLATES CREATED</td>
+                                    <td colspan="4" class="table-empty-state">
+                                        <i class="fas fa-palette"></i>
+                                        <p>No templates created yet</p>
+                                    </td>
                                 </tr>
                             @endforelse
-
                         </tbody>
                     </table>
                 </div>
