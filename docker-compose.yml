@@ -50,8 +50,8 @@ services:
         - GID=${GID:-1000}
     restart: unless-stopped
     volumes:
-      - ./src:/var/www/html:delegated
-      - ./backups:/var/www/html/storage/app/backups:delegated
+      - ./src:/var/www/html:ro
+      - ./backups:/var/www/html/storage/app/backups:ro
     networks:
       - laravel
 
