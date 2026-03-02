@@ -18,7 +18,7 @@ class CreateTemplate extends Component
     use BasicHelper;
 
     public $sessionToken;
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     public $templateName;
 

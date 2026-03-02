@@ -18,7 +18,7 @@ class Dashboard extends Component
 {
     use WithPagination;
     use BasicHelper;
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     public $lowStockThreshold = 10;
 
@@ -39,8 +39,8 @@ class Dashboard extends Component
     {
         return auth()->user()->addSelect(
             '*',
-            DB::raw('(SELECT count(`id`) FROM hotspot_vouchers WHERE `connected` = true AND `user_id` = `users`.`id`) as active_vouchers'),
-            DB::raw('(SELECT count(`id`) FROM hotspot_vouchers WHERE `used_date` IS NULL AND `user_id` = `users`.`id`) as available_vouchers')
+            DB::raw('(SELECT count(id) FROM hotspot_vouchers WHERE connected = true AND user_id = users.id) as active_vouchers'),
+            DB::raw('(SELECT count(id) FROM hotspot_vouchers WHERE used_date IS NULL AND user_id = users.id) as available_vouchers')
         )->first();
     }
 
@@ -64,8 +64,8 @@ class Dashboard extends Component
             COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnYesterday,
             COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnThisWeek,
             COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnLastWeek,
-            COALESCE(SUM(CASE WHEN MONTH(transact_date) = ? AND YEAR(transact_date) = YEAR(NOW()) THEN amount ELSE 0 END), 0) as earnThisMonth,
-            COALESCE(SUM(CASE WHEN MONTH(transact_date) = ? AND YEAR(transact_date) = ? THEN amount ELSE 0 END), 0) as earnLastMonth',
+            COALESCE(SUM(CASE WHEN EXTRACT(MONTH FROM transact_date) = ? AND EXTRACT(YEAR FROM transact_date) = EXTRACT(YEAR FROM NOW()) THEN amount ELSE 0 END), 0) as earnThisMonth,
+            COALESCE(SUM(CASE WHEN EXTRACT(MONTH FROM transact_date) = ? AND EXTRACT(YEAR FROM transact_date) = ? THEN amount ELSE 0 END), 0) as earnLastMonth',
             [$today, $yesterday, $currentWeekStart, $currentWeekEnd, $lastWeekStart, $lastWeekEnd, $currentMonth, $lastMonth, $lastMonthYear])
             ->first();
     }
@@ -77,7 +77,7 @@ class Dashboard extends Component
             ->select(
                 'id',
                 'name',
-                DB::raw("(SELECT count(`id`) FROM `hotspot_vouchers` WHERE `hotspot_profile_id` = `hotspot_profiles`.`id` AND `used_date` is NULL) as `stock`"),
+                DB::raw("(SELECT count(id) FROM hotspot_vouchers WHERE hotspot_profile_id = hotspot_profiles.id AND used_date is NULL) as stock"),
             )
             ->paginate(10);
     }
@@ -89,7 +89,7 @@ class Dashboard extends Component
             ->select(
                 'id',
                 'name',
-                DB::raw("(SELECT count(`id`) FROM `hotspot_vouchers` WHERE `hotspot_profile_id` = `hotspot_profiles`.`id` AND `used_date` is NULL) as `stock`"),
+                DB::raw("(SELECT count(id) FROM hotspot_vouchers WHERE hotspot_profile_id = hotspot_profiles.id AND used_date is NULL) as stock"),
             )
             ->having('stock', '<', $this->lowStockThreshold)
             ->orderBy('stock', 'ASC')

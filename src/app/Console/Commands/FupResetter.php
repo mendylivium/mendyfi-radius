@@ -32,7 +32,7 @@ class FupResetter extends Command
     {
         //
         $activeFairUse = ActiveFairUsePolicy::query()
-        ->whereRaw('NOW() > `resets_on`')
+        ->whereRaw('NOW() > resets_on')
         ->limit(10)
         ->get();
 

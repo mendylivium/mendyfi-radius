@@ -13,7 +13,7 @@ class FupList extends Component
     use BasicHelper;
     use WithPagination;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     #[Computed()]
     public function policies()

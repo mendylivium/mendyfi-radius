@@ -17,6 +17,7 @@ class Branding extends Component
     public $primary_color;
     public $secondary_color;
     public $sidebar_color;
+    public $accent_color;
     public $logo;
     public $favicon;
     public $currentLogo;
@@ -29,6 +30,7 @@ class Branding extends Component
         $this->primary_color = $user->primary_color ?? '#4e73df';
         $this->secondary_color = $user->secondary_color ?? '#858796';
         $this->sidebar_color = $user->sidebar_color ?? '#4e73df';
+        $this->accent_color = $user->accent_color ?? '#059669';
         $this->currentLogo = $user->logo_path;
         $this->currentFavicon = $user->favicon_path;
     }
@@ -54,6 +56,7 @@ class Branding extends Component
             'primary_color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
             'secondary_color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
             'sidebar_color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
+            'accent_color' => 'required|regex:/^#[a-fA-F0-9]{6}$/',
             'logo' => 'nullable|image|max:2048',
             'favicon' => 'nullable|image|max:512',
         ]);
@@ -88,6 +91,7 @@ class Branding extends Component
         $user->primary_color = $this->primary_color;
         $user->secondary_color = $this->secondary_color;
         $user->sidebar_color = $this->sidebar_color;
+        $user->accent_color = $this->accent_color;
         $user->save();
 
         // Reset file inputs
@@ -141,11 +145,13 @@ class Branding extends Component
         $this->primary_color = '#4e73df';
         $this->secondary_color = '#858796';
         $this->sidebar_color = '#4e73df';
-        
+        $this->accent_color = '#059669';
+
         $user = auth()->user();
         $user->primary_color = $this->primary_color;
         $user->secondary_color = $this->secondary_color;
         $user->sidebar_color = $this->sidebar_color;
+        $user->accent_color = $this->accent_color;
         $user->save();
 
         $this->showFlash([

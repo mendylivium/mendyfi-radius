@@ -51,6 +51,11 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 |
 */
 
+// Health endpoint -- no auth, no tenant middleware. Used by Docker healthcheck and Pangolin.
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'time' => now()->toIso8601String()]);
+})->name('health');
+
 
 foreach (config('tenancy.central_domains') as $domain) {
 
@@ -60,8 +65,10 @@ foreach (config('tenancy.central_domains') as $domain) {
 
     Route::domain($domain)->group(function () {
         // your actual routes
-        Route::group(['prefix' => 'auth'], function(){
-            Route::get('login', AdminLogin::class)->name('admin.auth.login');
+        Route::middleware(['throttle:5,1'])->group(function () {
+            Route::group(['prefix' => 'auth'], function(){
+                Route::get('login', AdminLogin::class)->name('admin.auth.login');
+            });
         });
         
 
@@ -76,8 +83,10 @@ foreach (config('tenancy.central_domains') as $domain) {
                 Route::get('dashboard',AdminDashboard::class)->name('admin.dashboard');
                 Route::get('new-user',AddUser::class)->name('admin.adduser');
                 Route::get('edit-user-{id}',EditUser::class)->name('admin.edituser');
+                Route::get('tenant/{id}', App\Livewire\Admin\TenantDetail::class)->name('admin.tenant.detail');
                 Route::get('config', Config::class)->name('admin.config');
-        
+                Route::get('backups', App\Livewire\Admin\BackupManager::class)->name('admin.backups');
+
                 Route::get('out',function(){
                     auth()->logout();
                     return redirect()->route('admin.auth.login');
@@ -104,6 +113,7 @@ Route::group([
         'web',
         env('IDENTIFY_BY_PARAMATER', false) ? InitializeTenancyByRequestData::class : InitializeTenancyByDomain::class,
         env('IDENTIFY_BY_PARAMATER', false) ? 'web' : (app()->runningInConsole()? null : ((filter_var(request()->getHost(),FILTER_VALIDATE_IP)) ? 'web' : PreventAccessFromCentralDomains::class)),
+        'tenant.active',
     ]
 ],function () {
     Route::group(['prefix' => 'api'],function(){
@@ -116,8 +126,10 @@ Route::group([
 
     Route::group([ 'prefix' => 'client'],function(){
     
-        Route::group(['prefix' => 'auth', 'middleware' => 'guest'],function(){
-            Route::get('login',Login::class)->name('client.auth.login');
+        Route::middleware(['throttle:5,1'])->group(function () {
+            Route::group(['prefix' => 'auth', 'middleware' => 'guest'],function(){
+                Route::get('login',Login::class)->name('client.auth.login');
+            });
         });
     
         Route::group(['middleware' => 'auth'],function(){

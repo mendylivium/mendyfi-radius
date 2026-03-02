@@ -59,7 +59,7 @@ class ImportBackup extends Command
         $dbHost = env('DB_HOST');
 
         // Run the import command
-        $command = "mysql -h $dbHost -u $dbUsername -p'$dbPassword' $dbName < " . escapeshellarg($dbPath);
+        $command = "PGPASSWORD='$dbPassword' psql -h $dbHost -U $dbUsername $dbName < " . escapeshellarg($dbPath);
 
         $returnVar = null;
         exec($command, $output, $returnVar);
@@ -75,8 +75,8 @@ class ImportBackup extends Command
     {
         try {
             // Drop the database if it exists, then create it again
-            DB::statement("DROP DATABASE IF EXISTS `$database`");
-            DB::statement("CREATE DATABASE `$database`");
+            DB::statement("DROP DATABASE IF EXISTS \"$database\"");
+            DB::statement("CREATE DATABASE \"$database\"");
             $this->info("Database `$database` recreated.");
         } catch (\Exception $e) {
             $this->error("Failed to recreate database `$database`: " . $e->getMessage());
@@ -86,14 +86,16 @@ class ImportBackup extends Command
     protected function reconnectToDatabase($database)
 {
     try {
+        $connection = config('tenancy.database.central_connection', config('database.default'));
+
         // Purge the connection to reset the database context
-        DB::purge('mysql'); // Use the connection name you configured in database.php if different
+        DB::purge($connection);
 
         // Set the database connection to the new database
-        config(['database.connections.mysql.database' => $database]);
+        config(["database.connections.{$connection}.database" => $database]);
 
         // Re-establish the connection to the new database
-        DB::reconnect('mysql');
+        DB::reconnect($connection);
 
         $this->info("Connected to database `$database`.");
     } catch (\Exception $e) {

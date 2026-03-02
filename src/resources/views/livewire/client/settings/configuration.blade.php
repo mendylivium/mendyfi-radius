@@ -1,173 +1,225 @@
-<div class="row">
-    <div class="col-12">
-        <x-partials.flash />
-    </div>
-    <div class="col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Configuration</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
+<div class="space-y-4">
 
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label class="text text-xs mb-0">RADIUS IP [PUBLIC / WAN]:</label>
-                            <input type="text" wire:model="radiusPublicIP" class="form-control" readonly>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label class="text text-xs mb-0">RADIUS SECRET:</label>
-                            <input type="text" class="form-control" value="{{ $this->user->api_secret }}" readonly>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="text text-xs mb-0">Mikrotik Realm:</label>
-                            <input type="text" wire:model="mktikRealm" class="form-control" readonly>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="text text-xs mb-0">Other (NAS Identification):</label>
-                            <input type="text" wire:model="otherRealm" class="form-control" readonly>
-                        </div>
-                    </div>
-
-                </div>
-                <span>
-                    <b>Note:</b>If you are behind CGNAT, the IP {{ $radiusPublicIP }} may not work. You can use the
-                    local IP of this system instead..
-                </span>
-            </div>
-            <div class="card-footer">
-                @php
-                    $rand = rand(1111, 9999);
-                @endphp
-                <button class="btn btn-sm btn-warning"
-                    wire:confirm.prompt="This will reject devices that uses the old Config. \n\nPlease type {{ $rand }} tp proceed|{{ $rand }}"
-                    wire:click="recreate">
-                    <li class="fas fa-sync-alt mr-1">
-                    </li>
-                    Recreate
-                </button>
-            </div>
-        </div>
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">External Portal</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12">
-                        <label class="text text-xs mb-0">TPLINK-EAP Stand Alone:</label>
-                        <input type="text" class="form-control"
-                            value="http://{{ $radiusPublicIP }}:8090/tplink-{{ $this->user->username }}" readonly>
-                    </div>
-                </div>
-            </div>
+    {{-- Page Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+            <h2 class="text-xl font-bold text-base-content">Configuration</h2>
+            <p class="text-sm text-base-content/60">RADIUS settings and account credentials</p>
         </div>
     </div>
 
-    <div class="col-lg-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        <form wire:submit.prevent="changeUserName">
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between py-3">
-                    <h6 class="m-0 text-primary">Change Username</h6>
-                </div>
-                <div class="card-body">
+        {{-- Left Column: RADIUS Config + External Portal --}}
+        <div class="space-y-4">
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">UserName</label>
-                                <input type="text" wire:model="userName" class="form-control">
-                                @error('userName')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Current Password</label>
-                                <input type="password" wire:model="currentPassword2" class="form-control">
-                                @error('currentPassword2')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
+            {{-- RADIUS Configuration --}}
+            <x-mary-card shadow>
+                <x-slot:title>
+                    <div class="flex items-center gap-2">
+                        <x-mary-icon name="o-cog-6-tooth" class="w-4 h-4" />
+                        Configuration
                     </div>
-                    @error('otherError')
-                        <span class="text text-danger text-xs">{{ $message }}</span>
-                    @enderror
+                </x-slot:title>
 
-                </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-sm btn-warning">
-                        <li class="fas fa-sync-alt mr-1">
-                        </li>
-                        Change Username
-                    </button>
-                </div>
-            </div>
-        </form>
-
-        <form wire:submit.prevent="changePass">
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between py-3">
-                    <h6 class="m-0 text-primary">Change Password</h6>
-                </div>
-                <div class="card-body">
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Current Password</label>
-                                <input type="password" wire:model="currentPassword" class="form-control">
-                                @error('currentPassword')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">New Password</label>
-                                <input type="password" wire:model="password" class="form-control">
-                                @error('password')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Confirm New Password</label>
-                                <input type="password" wire:model="password_confirmation" class="form-control">
-                                @error('password_confirmation')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-medium">RADIUS IP [PUBLIC / WAN]</span>
+                        </label>
+                        <input type="text" wire:model="radiusPublicIP" class="input input-bordered w-full bg-base-200 text-base-content/70" readonly>
                     </div>
-                    @error('otherError')
-                        <span class="text text-danger text-xs">{{ $message }}</span>
-                    @enderror
 
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-medium">RADIUS SECRET</span>
+                        </label>
+                        <input type="text" class="input input-bordered w-full bg-base-200 text-base-content/70" value="{{ $this->user->api_secret }}" readonly>
+                    </div>
+
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-medium">Mikrotik Realm</span>
+                        </label>
+                        <input type="text" wire:model="mktikRealm" class="input input-bordered w-full bg-base-200 text-base-content/70" readonly>
+                    </div>
+
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-medium">Other (NAS Identification)</span>
+                        </label>
+                        <input type="text" wire:model="otherRealm" class="input input-bordered w-full bg-base-200 text-base-content/70" readonly>
+                    </div>
                 </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-sm btn-warning">
-                        <li class="fas fa-sync-alt mr-1">
-                        </li>
-                        Change Pass
+
+                <div class="alert alert-info mt-4">
+                    <x-mary-icon name="o-information-circle" class="w-5 h-5 shrink-0" />
+                    <span class="text-sm">
+                        <strong>Note:</strong> If you are behind CGNAT, the IP {{ $radiusPublicIP }} may not work.
+                        You can use the local IP of this system instead.
+                    </span>
+                </div>
+
+                <x-slot:actions>
+                    @php
+                        $rand = rand(1111, 9999);
+                    @endphp
+                    <button class="btn btn-warning btn-sm"
+                        wire:confirm.prompt="This will reject devices that uses the old Config. \n\nPlease type {{ $rand }} tp proceed|{{ $rand }}"
+                        wire:click="recreate">
+                        <x-mary-icon name="o-arrow-path" class="w-4 h-4" />
+                        Recreate
                     </button>
+                </x-slot:actions>
+            </x-mary-card>
+
+            {{-- External Portal --}}
+            <x-mary-card shadow>
+                <x-slot:title>
+                    <div class="flex items-center gap-2">
+                        <x-mary-icon name="o-globe-alt" class="w-4 h-4" />
+                        External Portal
+                    </div>
+                </x-slot:title>
+
+                <div>
+                    <label class="label">
+                        <span class="label-text font-medium">TPLINK-EAP Stand Alone</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full bg-base-200 text-base-content/70"
+                        value="http://{{ $radiusPublicIP }}:8090/tplink-{{ $this->user->username }}" readonly>
                 </div>
-            </div>
-        </form>
+            </x-mary-card>
+
+        </div>
+
+        {{-- Right Column: Change Username + Change Password --}}
+        <div class="space-y-4">
+
+            {{-- Change Username --}}
+            <form wire:submit.prevent="changeUserName">
+                <x-mary-card shadow>
+                    <x-slot:title>
+                        <div class="flex items-center gap-2">
+                            <x-mary-icon name="o-user" class="w-4 h-4" />
+                            Change Username
+                        </div>
+                    </x-slot:title>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Username</span>
+                            </label>
+                            <input type="text" wire:model="userName" class="input input-bordered w-full">
+                            @error('userName')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Current Password</span>
+                            </label>
+                            <input type="password" wire:model="currentPassword2" class="input input-bordered w-full">
+                            @error('currentPassword2')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        @error('otherError')
+                            <p class="text-error text-xs">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <x-slot:actions>
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            <x-mary-icon name="o-arrow-path" class="w-4 h-4" />
+                            Change Username
+                        </button>
+                    </x-slot:actions>
+                </x-mary-card>
+            </form>
+
+            {{-- Change Password --}}
+            <form wire:submit.prevent="changePass">
+                <x-mary-card shadow>
+                    <x-slot:title>
+                        <div class="flex items-center gap-2">
+                            <x-mary-icon name="o-lock-closed" class="w-4 h-4" />
+                            Change Password
+                        </div>
+                    </x-slot:title>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Current Password</span>
+                            </label>
+                            <input type="password" wire:model="currentPassword" class="input input-bordered w-full">
+                            @error('currentPassword')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">New Password</span>
+                            </label>
+                            <input type="password" wire:model="password" class="input input-bordered w-full">
+                            @error('password')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Confirm New Password</span>
+                            </label>
+                            <input type="password" wire:model="password_confirmation" class="input input-bordered w-full">
+                            @error('password_confirmation')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        @error('otherError')
+                            <p class="text-error text-xs">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <x-slot:actions>
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            <x-mary-icon name="o-arrow-path" class="w-4 h-4" />
+                            Change Password
+                        </button>
+                    </x-slot:actions>
+                </x-mary-card>
+            </form>
+
+        </div>
+
     </div>
+
+    {{-- Data Export --}}
+    <x-mary-card shadow class="mt-4">
+        <x-slot:title>
+            <div class="flex items-center gap-2">
+                <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4" />
+                Data Export
+            </div>
+        </x-slot:title>
+
+        <p class="text-sm text-base-content/70 mb-4">
+            Export all your hotspot data (profiles, vouchers, resellers, templates, policies, and settings) as a JSON file.
+            This can be used for backup or migration purposes.
+        </p>
+
+        <x-slot:actions>
+            <button class="btn btn-primary btn-sm" wire:click="exportData">
+                <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4" />
+                Export My Data
+            </button>
+        </x-slot:actions>
+    </x-mary-card>
 
 </div>

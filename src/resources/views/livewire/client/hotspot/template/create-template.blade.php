@@ -1,178 +1,121 @@
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Create Voucher Template</h6>
-            </div>
-            <div class="card-body">
-                <form
-                    wire:submit.prevent="create($('#templateName').val(), cssTemplate.getValue(), htmlTemplate.getValue())">
-                    <div class="form-group">
-                        <label class="text text-xs text-primary mb-0">Name:</label>
-                        <input type="text" id="templateName" class="form-control"placeholder="Enter Template Name"
-                            autocomplete="off">
-                        @error('templateName')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="form-group" wire:ignore>
-                        <label class="text text-xs text-primary mb-0">Style (CSS):</label>
-                        <textarea id="cssEditor" class="form-control" :style="{ 'font-size': '0.7rem' }" cols="30" rows="10">{!! $templateCss !!}</textarea>
-                        @error('templateCss')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="form-group" wire:ignore>
-                        <label class="text text-xs text-primary mb-0">Template (HTML):</label>
-                        <textarea class="form-control" id="htmlEditor" :style="{ 'font-size': '0.7rem' }" cols="30" rows="10">{{ $templateHtml }}</textarea>
-                        @error('templateHtml')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    @error('otherError')
-                        <span class="text text-xs text-danger">{{ $message }}</span>
-                    @enderror
-                    <hr>
-                    <div class="d-flex justify-content-start">
-                        <a class="btn btn-secondary mr-2" href="{{ route('client.voucher.template') }}">Cancel</a>
-                        <button class="btn btn-primary" type="submit">Create</button>
-                    </div>
-                </form>
-            </div>
+<div class="space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+            <h2 class="text-xl font-bold text-base-content">Create Voucher Template</h2>
+            <p class="text-sm text-base-content/60">Design a custom printable voucher layout</p>
         </div>
     </div>
-    <div class="col-lg-4">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Parameters</h6>
-            </div>
-            <div class="card-body text-md">
-                <ul>
-                    <li>
-                        <span class="text text-info">"voucher.id"</span>
-                        <ul>
-                            <li class="text-xs">
-                                Unique ID of Voucher
-                            </li>
-                        </ul>
-                    </li>
 
-                    <li>
-                        <span class="text text-info">"voucher.code"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The CODE / Username of Voucher
-                            </li>
-                        </ul>
-                    </li>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2">
+            <x-mary-card shadow>
+                <form wire:submit.prevent="create($('#templateName').val(), cssTemplate.getValue(), htmlTemplate.getValue())">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Name</span>
+                            </label>
+                            <input type="text" id="templateName" class="input input-bordered w-full"
+                                placeholder="Enter Template Name" autocomplete="off">
+                            @error('templateName')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <li>
-                        <span class="text text-info">"voucher.password"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The Password of Voucher
-                            </li>
-                        </ul>
-                    </li>
+                        <div wire:ignore>
+                            <label class="label">
+                                <span class="label-text font-medium">Style (CSS)</span>
+                            </label>
+                            <textarea id="cssEditor" class="textarea textarea-bordered w-full" cols="30" rows="10">{!! $templateCss !!}</textarea>
+                            @error('templateCss')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <li>
-                        <span class="text text-info">"voucher.description"</span>
-                        <ul>
-                            <li class="text-xs">
-                                Description of Hotspot Profile
-                            </li>
-                        </ul>
-                    </li>
+                        <div wire:ignore>
+                            <label class="label">
+                                <span class="label-text font-medium">Template (HTML)</span>
+                            </label>
+                            <textarea class="textarea textarea-bordered w-full" id="htmlEditor" cols="30" rows="10">{{ $templateHtml }}</textarea>
+                            @error('templateHtml')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <li>
-                        <span class="text text-info">"voucher.profile"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The name of Hotspot Profile
-                            </li>
-                        </ul>
-                    </li>
+                        @error('otherError')
+                            <p class="text-error text-xs">{{ $message }}</p>
+                        @enderror
 
-                    <li>
-                        <span class="text text-info">"voucher.price"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The Price of Hotspot Profile
-                            </li>
-                        </ul>
-                    </li>
+                        <div class="flex gap-2 mt-6">
+                            <a href="{{ route('client.voucher.template') }}" class="btn btn-ghost">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create</button>
+                        </div>
+                    </div>
+                </form>
+            </x-mary-card>
+        </div>
 
+        <div>
+            <x-mary-card title="Parameters" shadow>
+                <ul class="space-y-2 text-sm">
                     <li>
-                        <span class="text text-info">"voucher.time_limit"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The Time Limit of Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.id"</span>
+                        <p class="text-xs text-base-content/60 ml-2">Unique ID of Voucher</p>
                     </li>
-
                     <li>
-                        <span class="text text-info">"voucher.data_limit"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The Data Limit of Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.code"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The CODE / Username of Voucher</p>
                     </li>
-
                     <li>
-                        <span class="text text-info">"voucher.speed_max_download"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The download speed of Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.password"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The Password of Voucher</p>
                     </li>
-
                     <li>
-                        <span class="text text-info">"voucher.speed_max_upload"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The upload speed of Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.description"</span>
+                        <p class="text-xs text-base-content/60 ml-2">Description of Hotspot Profile</p>
                     </li>
-
                     <li>
-                        <span class="text text-info">"voucher.validity"</span>
-                        <ul>
-                            <li class="text-xs">
-                                The expiration / validity of Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.profile"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The name of Hotspot Profile</p>
                     </li>
-
                     <li>
-                        <span class="text text-info">"voucher.reseller_name"</span>
-                        <ul>
-                            <li class="text-xs">
-                                Name of the Reseller of this Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.price"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The Price of Hotspot Profile</p>
                     </li>
-
                     <li>
-                        <span class="text text-info">"voucher.reseller_id"</span>
-                        <ul>
-                            <li class="text-xs">
-                                ID of the Reseller of this Voucher
-                            </li>
-                        </ul>
+                        <span class="text-info font-mono">"voucher.time_limit"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The Time Limit of Voucher</p>
+                    </li>
+                    <li>
+                        <span class="text-info font-mono">"voucher.data_limit"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The Data Limit of Voucher</p>
+                    </li>
+                    <li>
+                        <span class="text-info font-mono">"voucher.speed_max_download"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The download speed of Voucher</p>
+                    </li>
+                    <li>
+                        <span class="text-info font-mono">"voucher.speed_max_upload"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The upload speed of Voucher</p>
+                    </li>
+                    <li>
+                        <span class="text-info font-mono">"voucher.validity"</span>
+                        <p class="text-xs text-base-content/60 ml-2">The expiration / validity of Voucher</p>
+                    </li>
+                    <li>
+                        <span class="text-info font-mono">"voucher.reseller_name"</span>
+                        <p class="text-xs text-base-content/60 ml-2">Name of the Reseller of this Voucher</p>
+                    </li>
+                    <li>
+                        <span class="text-info font-mono">"voucher.reseller_id"</span>
+                        <p class="text-xs text-base-content/60 ml-2">ID of the Reseller of this Voucher</p>
                     </li>
                 </ul>
 
-            </div>
-            <div class="card-footer">
-                <span class="text text-xs">
-                    <b>Note:</b> Use AlpineJS`s <span class="text-danger">x-text</span> to display the value
-                    of parameter
-                </span>
-            </div>
+                <div class="mt-4 p-3 bg-base-200 rounded-lg text-xs text-base-content/60">
+                    <strong>Note:</strong> Use AlpineJS's <span class="text-error font-mono">x-text</span> to display the value of a parameter.
+                </div>
+            </x-mary-card>
         </div>
     </div>
 </div>

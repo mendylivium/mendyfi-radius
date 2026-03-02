@@ -17,7 +17,7 @@ class GeneratedTemplate extends Component
     use BasicHelper;
 
     public $sessionToken;
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     public function deleteTemplate($id)
     {

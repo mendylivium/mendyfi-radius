@@ -16,7 +16,7 @@ class Profile extends Component
     use BasicHelper;
     use RadiusHelper;
     use WithPagination;
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     // Multi-select properties
     public $selectedItems = [];

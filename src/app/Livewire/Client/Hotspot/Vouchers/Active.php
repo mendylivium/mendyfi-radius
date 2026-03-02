@@ -9,6 +9,7 @@ use App\Models\HotspotVouchers;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Active extends Component
 {
@@ -16,7 +17,7 @@ class Active extends Component
     use RadiusHelper;
     use BasicHelper;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
     public $search = '';
     public $autoRefresh = false;
 
@@ -102,6 +103,50 @@ class Active extends Component
             'type' => 'danger',
             'message' => "{$count} active voucher(s) deleted!"
         ]);
+    }
+
+    public function exportCsv(): StreamedResponse
+    {
+        $vouchers = HotspotVouchers::leftJoin('hotspot_profiles', 'hotspot_profiles.id', 'hotspot_vouchers.hotspot_profile_id')
+            ->where('hotspot_vouchers.user_id', $this->user->id)
+            ->where('hotspot_vouchers.connected', true)
+            ->whereNotNull('hotspot_vouchers.used_date')
+            ->select(
+                'hotspot_vouchers.code',
+                'hotspot_vouchers.mac_address',
+                'hotspot_vouchers.ip_address',
+                'hotspot_vouchers.router_ip',
+                'hotspot_vouchers.used_date',
+                'hotspot_vouchers.expire_date',
+                'hotspot_vouchers.data_credit',
+                'hotspot_vouchers.session_download',
+                'hotspot_vouchers.session_upload',
+                'hotspot_profiles.name as profile_name',
+                'hotspot_profiles.price',
+                'hotspot_profiles.data_limit'
+            )
+            ->orderByDesc('hotspot_vouchers.id')
+            ->get();
+
+        return response()->streamDownload(function () use ($vouchers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Code', 'Profile', 'Price', 'MAC', 'IP', 'Router', 'Connected Since', 'Expires', 'Download', 'Upload']);
+            foreach ($vouchers as $v) {
+                fputcsv($handle, [
+                    $v->code,
+                    $v->profile_name,
+                    $v->price,
+                    $v->mac_address,
+                    $v->ip_address,
+                    $v->router_ip,
+                    $v->used_date,
+                    $v->expire_date,
+                    $this->convertBytes($v->session_download),
+                    $this->convertBytes($v->session_upload),
+                ]);
+            }
+            fclose($handle);
+        }, 'active-vouchers-' . now()->format('Y-m-d') . '.csv');
     }
 
     public function toggleAutoRefresh()

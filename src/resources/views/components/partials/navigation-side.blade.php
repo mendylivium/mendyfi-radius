@@ -4,6 +4,7 @@
         {{-- Admin navigation --}}
         <x-mary-menu-item title="Dashboard" icon="o-squares-2x2" link="{{ route('admin.dashboard') }}" />
         <x-mary-menu-item title="Config" icon="o-cog-6-tooth" link="{{ route('admin.config') }}" />
+        <x-mary-menu-item title="Backups" icon="o-circle-stack" link="{{ route('admin.backups') }}" />
     @else
         {{-- Client navigation --}}
         <x-mary-menu-item title="Dashboard" icon="o-squares-2x2" link="{{ route('client.dashboard') }}" />

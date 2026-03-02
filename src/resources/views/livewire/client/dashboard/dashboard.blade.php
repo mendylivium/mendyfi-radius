@@ -43,7 +43,8 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
 
         <x-mary-stat
-            title="Active Sessions"
+            title="Active"
+            description="Sessions"
             :value="$this->user->active_vouchers"
             icon="o-wifi"
             class="bg-base-100 shadow-sm"
@@ -51,7 +52,8 @@
             tooltip="Vouchers currently connected" />
 
         <x-mary-stat
-            title="Available Stock"
+            title="Stock"
+            description="Available"
             :value="$this->user->available_vouchers"
             icon="o-ticket"
             class="bg-base-100 shadow-sm"
@@ -59,7 +61,8 @@
             tooltip="Unused vouchers ready to sell" />
 
         <x-mary-stat
-            title="Generated Today"
+            title="Today"
+            description="Generated"
             :value="$this->vouchersGeneratedToday"
             icon="o-plus-circle"
             class="bg-base-100 shadow-sm"
@@ -67,7 +70,8 @@
             tooltip="Vouchers generated today" />
 
         <x-mary-stat
-            title="Earned Today"
+            title="Today"
+            description="Revenue"
             :value="'GYD ' . number_format($this->sales->earnToday, 2)"
             icon="o-banknotes"
             class="bg-base-100 shadow-sm"

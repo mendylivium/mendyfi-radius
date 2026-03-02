@@ -8,6 +8,7 @@ use App\Traits\BasicHelper;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class Configuration extends Component
@@ -54,7 +55,7 @@ class Configuration extends Component
         /**
          * tenancy()->central() currently not works here use DB instead
          */
-        $existInCentral = \DB::connection('mysql')
+        $existInCentral = \DB::connection(config('tenancy.database.central_connection'))
         ->table('domains')
         ->where([
             'username' => $this->userName
@@ -65,7 +66,7 @@ class Configuration extends Component
             return $this->addError('userName','Already Taken!');
         }
 
-        \DB::connection('mysql')
+        \DB::connection(config('tenancy.database.central_connection'))
         ->table('domains')
         ->where([
             'username' => $this->user->username
@@ -88,7 +89,7 @@ class Configuration extends Component
     {
         $this->validate([
             'currentPassword'   => 'required',
-            'password'  =>  'required|min:4|max:20|confirmed',
+            'password'  =>  'required|min:8|max:64|regex:/[0-9]/|confirmed',
         ]);
 
         if(!Hash::check($this->currentPassword, $this->user->password)) {
@@ -133,6 +134,37 @@ class Configuration extends Component
         $this->radiusIP = $this->getCurrentIp();
         $this->radiusPublicIP = $this->getPublicIp();
         $this->userName = $this->user->username;
+    }
+
+    public function exportData(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $user = auth()->user();
+
+        $data = [
+            'exported_at'        => now()->toIso8601String(),
+            'tenant'             => tenant()->id ?? 'unknown',
+            'username'           => $user->username,
+            'profiles'           => DB::table('hotspot_profiles')->get()->toArray(),
+            'vouchers'           => DB::table('vouchers')->get()->toArray(),
+            'resellers'          => DB::table('resellers')->get()->toArray(),
+            'voucher_templates'  => DB::table('voucher_templates')->get()->toArray(),
+            'app_settings'       => DB::table('app_settings')->get()->toArray(),
+        ];
+
+        // fair_use_policies may not exist in all tenant databases
+        try {
+            $data['fair_use_policies'] = DB::table('fair_use_policies')->get()->toArray();
+        } catch (\Exception $e) {
+            $data['fair_use_policies'] = [];
+        }
+
+        $filename = "hotspot-export-{$user->username}-" . now()->format('Y-m-d') . ".json";
+
+        return response()->streamDownload(function () use ($data) {
+            echo json_encode($data, JSON_PRETTY_PRINT);
+        }, $filename, [
+            'Content-Type' => 'application/json',
+        ]);
     }
 
     public function render()

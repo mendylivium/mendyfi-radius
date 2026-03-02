@@ -50,7 +50,8 @@ class EditUser extends Component
     {
         $this->validate([
             'domain' => 'required',
-            'userStatus' => 'required|in:active,suspended'
+            'userStatus' => 'required|in:active,suspended',
+            'password' => 'nullable|min:8|regex:/[0-9]/',
         ]);
 
         $tenant = Tenant::find($this->tenantId);

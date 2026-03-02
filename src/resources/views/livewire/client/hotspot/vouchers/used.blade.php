@@ -91,7 +91,7 @@
     @endif
 
     <x-mary-card shadow>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" wire:loading.class="opacity-50">
             <table class="table table-sm">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">

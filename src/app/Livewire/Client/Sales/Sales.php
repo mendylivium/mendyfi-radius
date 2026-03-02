@@ -19,7 +19,7 @@ class Sales extends Component
     use WithPagination;
     use RadiusHelper;
     
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     // Filters
     public $dateRange = 'all';

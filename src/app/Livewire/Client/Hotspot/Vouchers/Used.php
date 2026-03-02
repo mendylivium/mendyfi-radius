@@ -17,7 +17,7 @@ class Used extends Component
     use WithPagination;
     use RadiusHelper;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
     public $search = '';
     public $dateRange = 'all';
     public $dateFrom = '';

@@ -342,7 +342,7 @@ class Authentication extends Controller
         }
         
         $activeFairUsePolicy = ActiveFairUsePolicy::query()
-        ->whereRaw("`client_id`='{$this->hotspotCustomer->id}' AND `type`='hotspot' AND NOW() < `resets_on`")
+        ->whereRaw('client_id = ? AND type = ? AND NOW() < resets_on', [$this->hotspotCustomer->id, 'hotspot'])
         ->get();
 
         if($activeFairUsePolicy) {

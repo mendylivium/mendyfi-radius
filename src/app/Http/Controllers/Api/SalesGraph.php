@@ -34,11 +34,11 @@ class SalesGraph extends Controller
         $recentSales = SalesRecord::where('user_id', $user->id)
         ->select(
             DB::raw('COALESCE(SUM(amount), 0) as total_amount'),
-            DB::raw("day(transact_date) as day")
+            DB::raw("EXTRACT(DAY FROM transact_date) as day")
             )
         ->whereBetween('transact_date', [$endDate->format('Y-m-d'), $startDate->format('Y-m-d')])
         ->groupBy(
-            DB::raw("day(transact_date)")
+            DB::raw("EXTRACT(DAY FROM transact_date)")
         )
         ->pluck('total_amount','day')
         ->take($interval)

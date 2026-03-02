@@ -8,10 +8,16 @@
                 <span class="badge badge-primary badge-sm ml-1">{{ $this->vouchers->total() }}</span>
             </p>
         </div>
-        <a href="{{ route('client.voucher.generate') }}" class="btn btn-primary btn-sm gap-1.5">
-            <x-mary-icon name="o-plus" class="w-4 h-4" />
-            Generate
-        </a>
+        <div class="flex gap-2">
+            <button class="btn btn-outline btn-sm gap-1.5" wire:click="exportCsv">
+                <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4" />
+                <span class="hidden sm:inline">Export CSV</span>
+            </button>
+            <a href="{{ route('client.voucher.generate') }}" class="btn btn-primary btn-sm gap-1.5">
+                <x-mary-icon name="o-plus" class="w-4 h-4" />
+                Generate
+            </a>
+        </div>
     </div>
 
     {{-- Vouchers card --}}

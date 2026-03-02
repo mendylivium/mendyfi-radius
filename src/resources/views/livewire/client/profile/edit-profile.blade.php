@@ -1,213 +1,244 @@
-<div class="row">
-    <div class="col-md-4 order-md-2">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Convertions</h6>
-            </div>
-            <div class="card-body">
-                <span class="text text-xs">
-                    <b>1 MB</b> = 1,048,576 Bytes <br>
-                    <b>5 MB</b> = 5,242,880 Bytes <br>
-                    <b>10 MB</b> = 1,048,5760 Bytes <br>
-                    <b>1 Hour</b> = 3,600 Seconds
-                </span>
-            </div>
+<div class="space-y-4">
+    {{-- Page Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+            <h2 class="text-xl font-bold text-base-content">Edit Hotspot Profile</h2>
+            <p class="text-sm text-base-content/60">Update bandwidth limits, pricing, and time restrictions</p>
         </div>
     </div>
-    <div class="col-md-8">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Edit Hotspot Profile</h6>
-            </div>
-            <div class="card-body">
-                <form wire:submit.prevent="save">
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">Name:</label>
-                        <input type="text" wire:model="profileName"
-                            class="form-control"placeholder="Enter Profile Name" autocomplete="off">
-                        @error('profileName')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">Description:</label>
-                        <input type="text" wire:model="profileDescription"
-                            class="form-control"placeholder="Enter Description" autocomplete="off">
-                        @error('profileDescription')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Price:</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" wire:model="profilePrice" value="0"
-                                        placeholder>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Peso</span>
-                                    </div>
-                                    @error('profilePrice')
-                                        <span class="text text-xs text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Uptime Limit:</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" wire:model="profileUptimeLimit"
-                                        value="0" placeholder>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Seconds</span>
-                                    </div>
-                                    @error('profileUptimeLimit')
-                                        <span class="text text-xs text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Validity:</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" wire:model="profileValidity"
-                                        value="0" placeholder>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Seconds</span>
-                                    </div>
-                                    @error('profileValidity')
-                                        <span class="text text-xs text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {{-- Main Form --}}
+        <div class="lg:col-span-2">
+            <x-mary-card shadow>
+                <form wire:submit.prevent="save" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{-- Name --}}
+                        <div class="md:col-span-2">
+                            <label class="label">
+                                <span class="label-text font-medium">Name</span>
+                            </label>
+                            <input type="text" wire:model="profileName"
+                                class="input input-bordered w-full"
+                                placeholder="Enter Profile Name" autocomplete="off">
+                            @error('profileName')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Max Download Speed:</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" wire:model="profileMaxDownload"
-                                        placeholder="None">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Bytes</span>
-                                    </div>
-                                    @error('profileMaxDownload')
-                                        <span class="text text-xs text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Max Upload Speed:</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" wire:model="profileMaxUpload"
-                                        placeholder="None">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Bytes</span>
-                                    </div>
-                                    @error('profileMaxUpload')
-                                        <span class="text text-xs text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Data Limit:</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" wire:model="profileDataLimit"
-                                        placeholder="None">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">Bytes</span>
-                                    </div>
-                                    @error('profileDataLimit')
-                                        <span class="text text-xs text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <hr>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Fair Use Policy:</label>
-                                <div class="input-group">
-                                    <select wire:model="policyId" class="form-control">
-                                        <option value="0">- None -</option>
-                                        @foreach ($this->availFairUserPolicies as $policy)
-                                            <option value="{{ $policy->id }}">{{ $policy->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">
-                                            <a href="{{ route('client.fairuse.list') }}" target="_blank"
-                                                rel="noopener noreferrer">
-                                                <i class="fas fa-external-link-alt"></i>
-                                            </a>
-                                        </span>
-                                        <button class="btn btn-sm btn-success" type="button"
-                                            wire:click="addPolicy()">
-                                            <li class="fas fa-plus mr-2"></li>Add
-                                        </button>
-                                    </div>
-                                </div>
-                                @error('policy_error')
-                                    <span class="text text-xs text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
+                        {{-- Description --}}
+                        <div class="md:col-span-2">
+                            <label class="label">
+                                <span class="label-text font-medium">Description</span>
+                            </label>
+                            <input type="text" wire:model="profileDescription"
+                                class="input input-bordered w-full"
+                                placeholder="Enter Description" autocomplete="off">
+                            @error('profileDescription')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table-bordered table-striped table-sm" id="dataTable" width="100%"
-                            cellspacing="0">
+                    <div class="divider text-xs text-base-content/40">Pricing & Time</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {{-- Price --}}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Price</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2 w-full">
+                                <x-mary-icon name="o-currency-dollar" class="w-4 h-4 text-base-content/40" />
+                                <input type="number" wire:model="profilePrice" class="grow" placeholder="0">
+                            </label>
+                            @error('profilePrice')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Uptime Limit --}}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Uptime Limit</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2 w-full">
+                                <x-mary-icon name="o-clock" class="w-4 h-4 text-base-content/40" />
+                                <input type="number" wire:model="profileUptimeLimit" class="grow" placeholder="0">
+                                <span class="text-xs text-base-content/40">sec</span>
+                            </label>
+                            @error('profileUptimeLimit')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Validity --}}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Validity</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2 w-full">
+                                <x-mary-icon name="o-clock" class="w-4 h-4 text-base-content/40" />
+                                <input type="number" wire:model="profileValidity" class="grow" placeholder="0">
+                                <span class="text-xs text-base-content/40">sec</span>
+                            </label>
+                            @error('profileValidity')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="divider text-xs text-base-content/40">Bandwidth & Data</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {{-- Max Download --}}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Max Download Speed</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2 w-full">
+                                <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4 text-base-content/40" />
+                                <input type="number" wire:model="profileMaxDownload" class="grow" placeholder="None">
+                                <span class="text-xs text-base-content/40">B</span>
+                            </label>
+                            @error('profileMaxDownload')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Max Upload --}}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Max Upload Speed</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2 w-full">
+                                <x-mary-icon name="o-arrow-up-tray" class="w-4 h-4 text-base-content/40" />
+                                <input type="number" wire:model="profileMaxUpload" class="grow" placeholder="None">
+                                <span class="text-xs text-base-content/40">B</span>
+                            </label>
+                            @error('profileMaxUpload')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Data Limit --}}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Data Limit</span>
+                            </label>
+                            <label class="input input-bordered flex items-center gap-2 w-full">
+                                <x-mary-icon name="o-signal" class="w-4 h-4 text-base-content/40" />
+                                <input type="number" wire:model="profileDataLimit" class="grow" placeholder="None">
+                                <span class="text-xs text-base-content/40">B</span>
+                            </label>
+                            @error('profileDataLimit')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="divider text-xs text-base-content/40">Fair Use Policy</div>
+
+                    {{-- FUP Bind Row --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Attach Policy</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <select wire:model="policyId" class="select select-bordered flex-1">
+                                    <option value="0">-- None --</option>
+                                    @foreach ($this->availFairUserPolicies as $policy)
+                                        <option value="{{ $policy->id }}">{{ $policy->name }}</option>
+                                    @endforeach
+                                </select>
+                                <a href="{{ route('client.fairuse.list') }}" target="_blank" rel="noopener noreferrer"
+                                    class="btn btn-ghost btn-square" title="Manage Policies">
+                                    <x-mary-icon name="o-arrow-up-tray" class="w-4 h-4" />
+                                </a>
+                                <button type="button" class="btn btn-success btn-square" wire:click="addPolicy()">
+                                    <x-mary-icon name="o-plus" class="w-4 h-4" />
+                                </button>
+                            </div>
+                            @error('policy_error')
+                                <p class="text-error text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Bound FUP Policies Table --}}
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm">
                             <thead>
-                                <tr style="font-size:0.8rem;">
-                                    <td>ID</td>
+                                <tr class="text-base-content/70 text-xs uppercase">
+                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>Resets</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody class="text text-xs text-nowrap">
+                            <tbody>
                                 @forelse ($this->bindedFairUserPolicies as $policy)
-                                    <tr>
-                                        <td>{{ $policy->id }}</td>
-                                        <td>{{ $policy->name }}</td>
-                                        <td>{{ $policy->resets_every }}</td>
+                                    <tr class="hover">
+                                        <td class="text-xs font-mono text-base-content/60">{{ $policy->id }}</td>
+                                        <td class="text-sm">{{ $policy->name }}</td>
+                                        <td class="text-sm">{{ $policy->resets_every }}</td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-danger"
-                                                    wire:click="unbindPolicy({{ $policy->id }})">
-                                                    <li class="fas fa-trash mr-2"></li>Delete
-                                                </button>
-                                            </div>
+                                            <button type="button" class="btn btn-error btn-xs"
+                                                wire:click="unbindPolicy({{ $policy->id }})">
+                                                <x-mary-icon name="o-trash" class="w-3 h-3" />
+                                                Remove
+                                            </button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4">NO POLICY ATTACHED TO THIS PROFILE</td>
+                                        <td colspan="4">
+                                            <div class="flex flex-col items-center justify-center py-8 text-base-content/40">
+                                                <x-mary-icon name="o-shield-check" class="w-8 h-8 mb-2" />
+                                                <p class="text-xs">No policy attached to this profile</p>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
+
                     @error('otherError')
-                        <span class="text text-xs text-danger">{{ $message }}</span>
+                        <p class="text-error text-xs">{{ $message }}</p>
                     @enderror
-                    <hr>
-                    <div class="d-flex justify-content-start">
-                        <a class="btn btn-secondary mr-2" href="{{ route('client.vouchers.profiles') }}">Cancel</a>
-                        <button class="btn btn-primary" type="submit">Save</button>
+
+                    <div class="flex gap-2 mt-6">
+                        <a href="{{ route('client.vouchers.profiles') }}" class="btn btn-ghost">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </form>
-            </div>
+            </x-mary-card>
+        </div>
+
+        {{-- Conversions Sidebar --}}
+        <div class="lg:col-span-1">
+            <x-mary-card title="Conversions" shadow separator>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between items-center py-1 border-b border-base-200">
+                        <span class="font-medium text-base-content">1 MB</span>
+                        <span class="text-base-content/60 font-mono text-xs">1,048,576 Bytes</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1 border-b border-base-200">
+                        <span class="font-medium text-base-content">5 MB</span>
+                        <span class="text-base-content/60 font-mono text-xs">5,242,880 Bytes</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1 border-b border-base-200">
+                        <span class="font-medium text-base-content">10 MB</span>
+                        <span class="text-base-content/60 font-mono text-xs">10,485,760 Bytes</span>
+                    </div>
+                    <div class="flex justify-between items-center py-1">
+                        <span class="font-medium text-base-content">1 Hour</span>
+                        <span class="text-base-content/60 font-mono text-xs">3,600 Seconds</span>
+                    </div>
+                </div>
+            </x-mary-card>
         </div>
     </div>
 </div>

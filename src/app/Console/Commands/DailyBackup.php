@@ -54,7 +54,7 @@ class DailyBackup extends Command
         $dbUsername = env('DB_USERNAME');
         $dbHost = env('DB_HOST');
 
-        $command = "mysqldump -h $dbHost -u $dbUsername -p'$dbPassword' $centralDatabaseName  > /var/www/html/storage/app/backups/central/{$file}";
+        $command = "PGPASSWORD='$dbPassword' pg_dump -h $dbHost -U $dbUsername $centralDatabaseName > /var/www/html/storage/app/backups/central/{$file}";
         exec($command);
 
         $this->cleanupOldCentralBackups();
@@ -76,7 +76,7 @@ class DailyBackup extends Command
         $dbUsername = env('DB_USERNAME');
         $dbHost = env('DB_HOST');
 
-        $command = "mysqldump -h $dbHost -u$dbUsername -p'$dbPassword' $databaseName > /var/www/html/storage/app/backups/tenants/{$file}";
+        $command = "PGPASSWORD='$dbPassword' pg_dump -h $dbHost -U $dbUsername $databaseName > /var/www/html/storage/app/backups/tenants/{$file}";
         exec($command);
 
         $this->cleanupOldTenantBackups();

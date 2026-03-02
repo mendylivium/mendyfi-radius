@@ -9,6 +9,10 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
+            <button class="btn btn-outline btn-sm gap-1.5" wire:click="exportCsv">
+                <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4" />
+                <span class="hidden sm:inline">Export CSV</span>
+            </button>
             <x-mary-button
                 icon="{{ $autoRefresh ? 'o-arrow-path' : 'o-pause' }}"
                 wire:click="toggleAutoRefresh"
@@ -44,7 +48,7 @@
     <x-mary-card shadow>
         @if($this->voucher->count() > 0)
         {{-- Desktop table --}}
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" wire:loading.class="opacity-50">
             <table class="table table-sm">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
