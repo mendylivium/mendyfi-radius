@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Models\Tenant;
 use App\Traits\TelegramHelper;
 use Illuminate\Console\Command;
 use App\Models\ActiveFairUsePolicy;
@@ -23,32 +24,31 @@ class FupResetter extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Reset expired fair use policies across all tenants';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        //
-        $activeFairUse = ActiveFairUsePolicy::query()
-        ->whereRaw('NOW() > resets_on')
-        ->limit(10)
-        ->get();
+        Tenant::all()->each(function ($tenant) {
+            $tenant->run(function () {
+                $activeFairUse = ActiveFairUsePolicy::query()
+                    ->whereRaw('NOW() > resets_on')
+                    ->limit(10)
+                    ->get();
 
-        if($activeFairUse) {
-            foreach($activeFairUse as $policy) {
-                $this->telegramSendMessage("2021159313:AAHEBoOLogYjLCpSwVeKPVmKKO4TIxa02vQ","-949707668","Removing FUP#{$policy->id}");
-                User::query()
-                ->where([
-                    'id' => $policy->client_id
-                ])->update([
-                    'fup_total_data' => 0,
-                    'fup_total_time' => 0,
-                ]);
+                foreach ($activeFairUse as $policy) {
+                    User::query()
+                        ->where('id', $policy->client_id)
+                        ->update([
+                            'fup_total_data' => 0,
+                            'fup_total_time' => 0,
+                        ]);
 
-                $policy->delete();
-            }
-        }
+                    $policy->delete();
+                }
+            });
+        });
     }
 }

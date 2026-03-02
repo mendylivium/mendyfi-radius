@@ -154,7 +154,7 @@
                                 <span class="font-mono font-semibold">{{ $voucher->stock }}</span>
                                 @if($voucher->stock == 0)
                                     <x-mary-badge value="Out" class="badge-error badge-sm" />
-                                @elseif($voucher->stock < $lowStockThreshold)
+                                @elseif($voucher->stock < $this->lowStockThreshold)
                                     <x-mary-badge value="Low" class="badge-warning badge-sm" />
                                 @else
                                     <x-mary-badge value="OK" class="badge-success badge-sm" />
