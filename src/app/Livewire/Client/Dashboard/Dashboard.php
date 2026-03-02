@@ -16,12 +16,23 @@ use Illuminate\Support\Facades\Http;
 
 class Dashboard extends Component
 {
-    
     use WithPagination;
     use BasicHelper;
     protected $paginationTheme = 'bootstrap';
 
     public $lowStockThreshold = 10;
+
+    public array $stockHeaders = [
+        ['key' => 'name',  'label' => 'Profile'],
+        ['key' => 'stock', 'label' => 'Stock', 'class' => 'text-right'],
+    ];
+
+    public array $salesHeaders = [
+        ['key' => 'code',         'label' => 'Code'],
+        ['key' => 'profile_name', 'label' => 'Profile'],
+        ['key' => 'amount',       'label' => 'Amount (GYD)', 'class' => 'text-right'],
+        ['key' => 'transact_date','label' => 'Time'],
+    ];
 
     #[Computed()]
     public function user()
@@ -36,57 +47,53 @@ class Dashboard extends Component
     #[Computed()]
     public function sales()
     {
-        $today = Carbon::now()->format('Y-m-d');
-        $yesterday = Carbon::yesterday()->format('Y-m-d');
+        $today           = Carbon::now()->format('Y-m-d');
+        $yesterday       = Carbon::yesterday()->format('Y-m-d');
         $currentWeekStart = Carbon::now()->startOfWeek()->format('Y-m-d');
-        $currentWeekEnd = Carbon::now()->endOfWeek()->format('Y-m-d');
-        $lastWeekStart = Carbon::now()->subWeek()->startOfWeek()->format('Y-m-d');
-        $lastWeekEnd = Carbon::now()->subWeek()->endOfWeek()->format('Y-m-d');
-        $currentMonth = Carbon::now()->month;
-        $lastMonth = Carbon::now()->subMonth()->month;
-        $lastMonthYear = Carbon::now()->subMonth()->year;
+        $currentWeekEnd   = Carbon::now()->endOfWeek()->format('Y-m-d');
+        $lastWeekStart   = Carbon::now()->subWeek()->startOfWeek()->format('Y-m-d');
+        $lastWeekEnd     = Carbon::now()->subWeek()->endOfWeek()->format('Y-m-d');
+        $currentMonth    = Carbon::now()->month;
+        $lastMonth       = Carbon::now()->subMonth()->month;
+        $lastMonthYear   = Carbon::now()->subMonth()->year;
 
         return SalesRecord::query()
-        ->where('user_id',$this->user->id)
-        ->selectRaw('
-        COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnToday,
-        COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnYesterday,
-        COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnThisWeek,
-        COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnLastWeek,
-        COALESCE(SUM(CASE WHEN MONTH(transact_date) = ? AND YEAR(transact_date) = YEAR(NOW()) THEN amount ELSE 0 END), 0) as earnThisMonth,
-        COALESCE(SUM(CASE WHEN MONTH(transact_date) = ? AND YEAR(transact_date) = ? THEN amount ELSE 0 END), 0) as earnLastMonth',
-        [$today, $yesterday, $currentWeekStart, $currentWeekEnd, $lastWeekStart, $lastWeekEnd, $currentMonth, $lastMonth, $lastMonthYear])
-        ->first();
+            ->where('user_id', $this->user->id)
+            ->selectRaw('
+            COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnToday,
+            COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnYesterday,
+            COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnThisWeek,
+            COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnLastWeek,
+            COALESCE(SUM(CASE WHEN MONTH(transact_date) = ? AND YEAR(transact_date) = YEAR(NOW()) THEN amount ELSE 0 END), 0) as earnThisMonth,
+            COALESCE(SUM(CASE WHEN MONTH(transact_date) = ? AND YEAR(transact_date) = ? THEN amount ELSE 0 END), 0) as earnLastMonth',
+            [$today, $yesterday, $currentWeekStart, $currentWeekEnd, $lastWeekStart, $lastWeekEnd, $currentMonth, $lastMonth, $lastMonthYear])
+            ->first();
     }
 
     #[Computed()]
     public function vouchers()
     {
-        return HotspotProfile::where([
-            'user_id' => $this->user->id,
-        ])
-        ->select(
-            'id',
-            'name',
-            DB::raw("(SELECT count(`id`) FROM `hotspot_vouchers` WHERE `hotspot_profile_id` = `hotspot_profiles`.`id` AND `used_date` is NULL) as `stock`"),
-        )
-        ->paginate(10);
+        return HotspotProfile::where('user_id', $this->user->id)
+            ->select(
+                'id',
+                'name',
+                DB::raw("(SELECT count(`id`) FROM `hotspot_vouchers` WHERE `hotspot_profile_id` = `hotspot_profiles`.`id` AND `used_date` is NULL) as `stock`"),
+            )
+            ->paginate(10);
     }
 
     #[Computed()]
     public function lowStockProfiles()
     {
-        return HotspotProfile::where([
-            'user_id' => $this->user->id,
-        ])
-        ->select(
-            'id',
-            'name',
-            DB::raw("(SELECT count(`id`) FROM `hotspot_vouchers` WHERE `hotspot_profile_id` = `hotspot_profiles`.`id` AND `used_date` is NULL) as `stock`"),
-        )
-        ->having('stock', '<', $this->lowStockThreshold)
-        ->orderBy('stock', 'ASC')
-        ->get();
+        return HotspotProfile::where('user_id', $this->user->id)
+            ->select(
+                'id',
+                'name',
+                DB::raw("(SELECT count(`id`) FROM `hotspot_vouchers` WHERE `hotspot_profile_id` = `hotspot_profiles`.`id` AND `used_date` is NULL) as `stock`"),
+            )
+            ->having('stock', '<', $this->lowStockThreshold)
+            ->orderBy('stock', 'ASC')
+            ->get();
     }
 
     #[Computed()]
@@ -105,6 +112,16 @@ class Dashboard extends Component
             ->count();
     }
 
+    #[Computed()]
+    public function recentSales()
+    {
+        return SalesRecord::where('user_id', $this->user->id)
+            ->select('code', 'profile_name', 'amount', 'transact_date')
+            ->latest('transact_date')
+            ->limit(10)
+            ->get();
+    }
+
     public function calculatePercentChange($current, $previous)
     {
         if ($previous == 0) {
@@ -116,9 +133,9 @@ class Dashboard extends Component
     public function render()
     {
         return view('livewire.client.dashboard.dashboard')
-        ->layout('components.layouts.app',[
-            'pageName' => 'Dashboard',
-            'links' => ['Dashboard']
-        ]);
+            ->layout('components.layouts.app', [
+                'pageName' => 'Dashboard',
+                'links'    => ['Dashboard'],
+            ]);
     }
 }
