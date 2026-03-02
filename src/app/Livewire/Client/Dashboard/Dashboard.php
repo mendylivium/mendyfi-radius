@@ -91,8 +91,8 @@ class Dashboard extends Component
                 'name',
                 DB::raw("(SELECT count(id) FROM hotspot_vouchers WHERE hotspot_profile_id = hotspot_profiles.id AND used_date is NULL) as stock"),
             )
-            ->having('stock', '<', $this->lowStockThreshold)
-            ->orderBy('stock', 'ASC')
+            ->havingRaw('(SELECT count(id) FROM hotspot_vouchers WHERE hotspot_profile_id = hotspot_profiles.id AND used_date is NULL) < ?', [$this->lowStockThreshold])
+            ->orderByRaw('(SELECT count(id) FROM hotspot_vouchers WHERE hotspot_profile_id = hotspot_profiles.id AND used_date is NULL) ASC')
             ->get();
     }
 
