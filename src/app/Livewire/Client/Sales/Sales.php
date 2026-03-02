@@ -137,9 +137,9 @@ class Sales extends Component
         if (!empty($this->search)) {
             $searchTerm = '%' . $this->search . '%';
             $query->where(function($q) use ($searchTerm) {
-                $q->where('sales_records.code', 'like', $searchTerm)
-                  ->orWhere('sales_records.mac_address', 'like', $searchTerm)
-                  ->orWhere('sales_records.ip_address', 'like', $searchTerm);
+                $q->where('sales_records.code', 'ilike', $searchTerm)
+                  ->orWhere('sales_records.mac_address', 'ilike', $searchTerm)
+                  ->orWhere('sales_records.ip_address', 'ilike', $searchTerm);
             });
         }
 
@@ -173,9 +173,9 @@ class Sales extends Component
         if (!empty($this->search)) {
             $searchTerm = '%' . $this->search . '%';
             $query->where(function($q) use ($searchTerm) {
-                $q->where('code', 'like', $searchTerm)
-                  ->orWhere('mac_address', 'like', $searchTerm)
-                  ->orWhere('ip_address', 'like', $searchTerm);
+                $q->where('code', 'ilike', $searchTerm)
+                  ->orWhere('mac_address', 'ilike', $searchTerm)
+                  ->orWhere('ip_address', 'ilike', $searchTerm);
             });
         }
 
@@ -239,9 +239,9 @@ class Sales extends Component
         if (!empty($this->search)) {
             $searchTerm = '%' . $this->search . '%';
             $query->where(function($q) use ($searchTerm) {
-                $q->where('sales_records.code', 'like', $searchTerm)
-                  ->orWhere('sales_records.mac_address', 'like', $searchTerm)
-                  ->orWhere('sales_records.ip_address', 'like', $searchTerm);
+                $q->where('sales_records.code', 'ilike', $searchTerm)
+                  ->orWhere('sales_records.mac_address', 'ilike', $searchTerm)
+                  ->orWhere('sales_records.ip_address', 'ilike', $searchTerm);
             });
         }
 

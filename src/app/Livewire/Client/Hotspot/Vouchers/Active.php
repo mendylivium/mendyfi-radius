@@ -238,11 +238,11 @@ class Active extends Component
         ->where('hotspot_vouchers.used_date','<>',null)
         ->when($this->search, function($query) {
             $query->where(function($query) {
-                $query->where('hotspot_vouchers.code', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_vouchers.mac_address', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_vouchers.ip_address', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_vouchers.router_ip', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_profiles.name', 'like', '%' . $this->search . '%');
+                $query->where('hotspot_vouchers.code', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_vouchers.mac_address', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_vouchers.ip_address', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_vouchers.router_ip', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_profiles.name', 'ilike', '%' . $this->search . '%');
             });
         })
         ->select(

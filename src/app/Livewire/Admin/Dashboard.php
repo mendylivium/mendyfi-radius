@@ -139,8 +139,8 @@ class Dashboard extends Component
             ->select('tenants.*', 'domains.domain', 'domains.username', 'domains.status', 'domains.created_at as domain_created_at')
             ->when($this->searchStr, function ($query) {
                 $query->where(function ($q) {
-                    $q->orWhere('domains.username', 'like', "%{$this->searchStr}%")
-                      ->orWhere('domains.domain', 'like', "%{$this->searchStr}%");
+                    $q->orWhere('domains.username', 'ilike', "%{$this->searchStr}%")
+                      ->orWhere('domains.domain', 'ilike', "%{$this->searchStr}%");
                 });
             })
             ->when($this->statusFilter !== 'all', function ($query) {

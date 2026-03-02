@@ -75,10 +75,78 @@
         .sidebar-brand a { color: inherit; }
         .sidebar-brand .border-base-300 { border-color: rgba(255, 255, 255, 0.1); }
         .sidebar-brand [data-menu-item]:hover { background: rgba(255, 255, 255, 0.1); }
+
+        /* Fix: daisyUI drawer height=100svh ignores sticky nav above it.
+           Mary UI with-nav only adjusts sidebar overlay, not the drawer container.
+           .drawer-content needs overflow-y:auto so the page content scrolls. */
+        main .drawer {
+            height: calc(100dvh - 53px) !important;
+        }
+        main .drawer .drawer-content {
+            height: calc(100dvh - 53px) !important;
+            overflow-y: auto !important;
+        }
+
+        /* ── Consistent form element rounding ──
+           @tailwindcss/forms plugin overrides daisyUI border-radius.
+           Force all form elements to use daisyUI's --rounded-btn (0.5rem). */
+        .input, .select, .textarea, .file-input,
+        input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], input[type="search"], input[type="tel"],
+        input[type="url"], input[type="date"], input[type="datetime-local"],
+        select, textarea {
+            border-radius: var(--rounded-btn, 0.5rem) !important;
+        }
+
+        /* ── Touch-friendly form elements (min 44px target) ── */
+        .input, .select, .textarea, .file-input,
+        .btn, button, [role="button"],
+        input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], select, textarea {
+            min-height: 2.75rem; /* 44px */
+        }
+        .btn-xs, .btn-sm { min-height: 2rem; }
+
+        /* ── Consistent card rounding ── */
+        .card, .alert, .stats {
+            border-radius: var(--rounded-box, 0.75rem) !important;
+        }
+
+        /* ── Mobile table improvements ── */
+        @media (max-width: 640px) {
+            .table { font-size: 0.8125rem; }
+            .table th, .table td { padding: 0.5rem 0.375rem; }
+            .badge { font-size: 0.6875rem; }
+        }
+
+        /* ── Mary UI input group fix: ensure icon prefix matches input rounding ── */
+        .input-group, [data-mary-input] {
+            border-radius: var(--rounded-btn, 0.5rem) !important;
+            overflow: hidden;
+        }
+
+        /* ── Checkbox/radio touch targets ── */
+        .checkbox, .radio, .toggle {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        label:has(.checkbox), label:has(.radio), label:has(.toggle) {
+            min-height: 2.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
     @endif
 </head>
 <body class="min-h-screen bg-base-100 font-sans antialiased">
+
+    {{-- Top navbar: rendered outside <x-mary-main> because Main component has no navbar slot --}}
+    <x-mary-nav sticky full-width class="shadow-sm">
+        <x-slot:brand>
+            @include('components.partials.navigation-top')
+        </x-slot:brand>
+    </x-mary-nav>
 
     <x-mary-main :full-width="false" with-nav>
 
@@ -103,12 +171,8 @@
             @include('components.partials.navigation-side')
         </x-slot:sidebar>
 
-        <x-slot:navbar>
-            @include('components.partials.navigation-top')
-        </x-slot:navbar>
-
-        <x-slot:content>
-            <div class="p-4 lg:p-6 max-w-7xl mx-auto w-full">
+        <x-slot:content class="!p-2 lg:!px-8 lg:!py-5">
+            <div class="max-w-7xl mx-auto w-full">
                 @include('components.partials.flash')
                 {{ $slot }}
             </div>

@@ -197,9 +197,9 @@ class Generated extends Component
         ])
         ->when($this->searchVC, function($query) {
             $query->where(function($query) {
-            $query->where('hotspot_vouchers.code', 'like', '%' . $this->searchVC . '%')
-                    ->orWhere('hotspot_vouchers.batch_code', 'like', '%' . $this->searchVC . '%')
-                    ->orWhere('hotspot_profiles.name', 'like', '%' . $this->searchVC . '%');
+            $query->where('hotspot_vouchers.code', 'ilike', '%' . $this->searchVC . '%')
+                    ->orWhere('hotspot_vouchers.batch_code', 'ilike', '%' . $this->searchVC . '%')
+                    ->orWhere('hotspot_profiles.name', 'ilike', '%' . $this->searchVC . '%');
             });
         })
         ->select(
@@ -244,19 +244,19 @@ class Generated extends Component
         ->where('hotspot_vouchers.used_date',null)
         ->when($this->searchBATCH, function($query) {
             $query->where(function($query) {
-            $query->where('hotspot_vouchers.batch_code', 'like', '%' . $this->searchBATCH . '%')
-                    ->orWhere('hotspot_profiles.name', 'like', '%' . $this->searchBATCH . '%')
-                    ->orWhere('resellers.name', 'like', '%' . $this->searchBATCH . '%');
+            $query->where('hotspot_vouchers.batch_code', 'ilike', '%' . $this->searchBATCH . '%')
+                    ->orWhere('hotspot_profiles.name', 'ilike', '%' . $this->searchBATCH . '%')
+                    ->orWhere('resellers.name', 'ilike', '%' . $this->searchBATCH . '%');
             });
         })
         ->groupBy(
-            'generation_date',
-            'name',
-            'price',
-            'batch_code',
-            'reseller_name'
+            'hotspot_vouchers.generation_date',
+            'hotspot_profiles.name',
+            'hotspot_profiles.price',
+            'hotspot_vouchers.batch_code',
+            'resellers.name'
         )
-        ->orderBy('hotspot_vouchers.id','DESC')
+        ->orderBy('hotspot_vouchers.generation_date','DESC')
         ->paginate(10,['*'],'batch');
     }
 

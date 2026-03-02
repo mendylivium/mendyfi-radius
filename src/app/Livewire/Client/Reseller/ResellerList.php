@@ -170,11 +170,11 @@ class ResellerList extends Component
             if(!empty($this->searchStr)) {
                 $searchTerm = '%' . $this->searchStr . '%';
                 $query->where(function($q) use ($searchTerm) {
-                    $q->where('name', 'like', $searchTerm)
+                    $q->where('name', 'ilike', $searchTerm)
                       ->orWhere('id', '=', $this->searchStr)
-                      ->orWhere('email', 'like', $searchTerm)
-                      ->orWhere('mobile', 'like', $searchTerm)
-                      ->orWhere('address_name', 'like', $searchTerm);
+                      ->orWhere('email', 'ilike', $searchTerm)
+                      ->orWhere('mobile', 'ilike', $searchTerm)
+                      ->orWhere('address_name', 'ilike', $searchTerm);
                 });
             }
         })
