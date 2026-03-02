@@ -1,96 +1,93 @@
-<div class="row">
-    <div class="col-12">
-        <x-partials.flash />
+<div class="space-y-4">
+
+    {{-- Page header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+            <h2 class="text-xl font-bold text-base-content">Users</h2>
+            <p class="text-sm text-base-content/60">Manage tenant accounts</p>
+        </div>
+        <a href="{{ route('admin.adduser') }}" class="btn btn-primary btn-sm gap-1.5">
+            <x-mary-icon name="o-plus" class="w-4 h-4" />
+            Add User
+        </a>
     </div>
-    <div class="col-12">
-        <div class="row">
-            <div class="col-xl-3 col-md-6 mb-2">
-                <div class="card border-info shadow">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    Total Users</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    {{ $this->info }}
+
+    {{-- Stat --}}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <x-mary-stat
+            title="Total Users"
+            :value="$this->info"
+            icon="o-users"
+            class="bg-base-100 shadow-sm"
+            color="text-primary" />
+    </div>
+
+    {{-- Users table --}}
+    <x-mary-card shadow>
+        <x-slot:title>
+            <div class="flex items-center justify-between w-full">
+                <span>Tenant Accounts</span>
+                <x-mary-input
+                    placeholder="Search by username or domain..."
+                    wire:model.live.debounce.500ms="searchStr"
+                    icon="o-magnifying-glass"
+                    class="w-72" />
+            </div>
+        </x-slot:title>
+
+        <div class="overflow-x-auto">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="text-base-content/70 text-xs uppercase">
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Domain</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($this->myTenants as $tenant)
+                        <tr class="hover">
+                            <td class="font-mono text-xs text-base-content/50">{{ $tenant->id }}</td>
+                            <td class="font-medium">{{ $tenant->username }}</td>
+                            <td class="text-sm text-base-content/70">{{ $tenant->domain }}</td>
+                            <td>
+                                @if($tenant->status === 'active')
+                                    <span class="badge badge-success badge-sm">Active</span>
+                                @else
+                                    <span class="badge badge-ghost badge-sm">{{ $tenant->status }}</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <a href="{{ route('admin.edituser', $tenant->id) }}"
+                                       class="btn btn-ghost btn-xs gap-1">
+                                        <x-mary-icon name="o-pencil-square" class="w-3.5 h-3.5" />
+                                        Edit
+                                    </a>
+                                    <x-mary-button
+                                        icon="o-trash"
+                                        class="btn-ghost btn-xs btn-error"
+                                        tooltip="Delete tenant"
+                                        wire:confirm.prompt="Delete user {{ $tenant->username }}?\n\nType {{ substr($tenant->id, -2) }} to confirm|{{ substr($tenant->id, -2) }}"
+                                        wire:click="deleteTenant('{{ $tenant->id }}')" />
                                 </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-users fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-12 text-base-content/40">
+                                <x-mary-icon name="o-users" class="w-10 h-10 mx-auto mb-2" />
+                                <p class="text-sm">No users found</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    </div>
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">Users</h6>
-                <div class="card-tools">
-                    <a class="btn btn-sm btn-primary" href="{{ route('admin.adduser') }}"><i
-                            class="fas fa-plus mr-1"></i>Add User</a>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <div class="input-group">
-                        <input type="text" wire:model.live.debounce.500ms="searchStr"
-                            placeholder="Enter UserName, ID or Domain" class="form-control">
-                        <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table-bordered table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                            <tr style="font-size:0.8rem;">
-                                <th>Id</th>
-                                <th>User Name</th>
-                                <th>Domain</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text text-xs text-nowrap">
-                            @forelse($this->myTenants as $tenant)
-                                <tr>
-                                    <td>{{ $tenant->id }}</td>
-                                    <td>{{ $tenant->username }}</td>
-                                    <td>{{ $tenant->domain }}</td>
-                                    <td>{{ $tenant->status }}</td>
-                                    <td style="min-width: 170px;width: 180px;">
-                                        <div class="d-flex justify-content-center align-item-center">
-                                            <div class="btn-group">
-
-                                                <div class="btn-group">
-                                                    <a class="btn btn-sm btn-info shadow"
-                                                        href="{{ route('admin.edituser', $tenant->id) }}"><i
-                                                            class="fas fa-edit mr-2"></i>Edit</a>
-                                                    <button class="btn btn-sm btn-danger shadow"
-                                                        wire:confirm.prompt="Are you sure?\n\nType {{ substr($tenant->id, -2) }} to confirm|{{ substr($tenant->id, -2) }}"
-                                                        wire:click="deleteTenant('{{ $tenant->id }}')"><i
-                                                            class="fas fa-trash mr-2"></i>Delete</button>
-                                                </div>
-                                            </div>
-
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5">NO USER FOUND</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-
-                </div>
-                <div class="d-flex justify-content-end mt-4">
-                    {{ $this->myTenants->links() }}
-                </div>
-            </div>
+        <div class="flex justify-end mt-4">
+            {{ $this->myTenants->links() }}
         </div>
-    </div>
+    </x-mary-card>
 </div>
