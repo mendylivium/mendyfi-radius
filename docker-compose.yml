@@ -15,7 +15,7 @@ services:
       - "8045:80"
       - "8090:80"
     volumes:
-      - ./src:/var/www/html:delegated
+      - ./src:/var/www/html:ro
     depends_on:
      - php
      - redis
@@ -107,8 +107,8 @@ services:
         - GID=${GID:-1000}
     restart: unless-stopped
     volumes:
-      - ./src:/var/www/html:delegated
-      - ./backups:/var/www/html/storage/app/backups:delegated
+      - ./src:/var/www/html:ro
+      - ./backups:/var/www/html/storage/app/backups:ro
     entrypoint: [ "php", "/var/www/html/artisan" ]
     depends_on:
       - mysql
@@ -125,7 +125,7 @@ services:
         - GID=${GID:-1000}
     restart: unless-stopped
     volumes:
-      - ./src:/var/www/html:delegated
+      - ./src:/var/www/html:ro
     entrypoint: ["/bin/sh","-c"]
     command:
     - |
