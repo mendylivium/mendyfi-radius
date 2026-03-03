@@ -131,8 +131,18 @@ class Configuration extends Component
 
     public function mount()
     {
-        $this->radiusIP = $this->getCurrentIp();
-        $this->radiusPublicIP = $this->getPublicIp();
+        try {
+            $this->radiusIP = $this->getCurrentIp();
+        } catch (\Throwable $e) {
+            $this->radiusIP = 'Unavailable';
+        }
+
+        try {
+            $this->radiusPublicIP = $this->getPublicIp();
+        } catch (\Throwable $e) {
+            $this->radiusPublicIP = 'Unavailable';
+        }
+
         $this->userName = $this->user->username;
     }
 
