@@ -155,7 +155,7 @@ class Configuration extends Component
             'tenant'             => tenant()->id ?? 'unknown',
             'username'           => $user->username,
             'profiles'           => DB::table('hotspot_profiles')->get()->toArray(),
-            'vouchers'           => DB::table('vouchers')->get()->toArray(),
+            'vouchers'           => DB::table('hotspot_vouchers')->get()->toArray(),
             'resellers'          => DB::table('resellers')->get()->toArray(),
             'voucher_templates'  => DB::table('voucher_templates')->get()->toArray(),
             'app_settings'       => DB::table('app_settings')->get()->toArray(),

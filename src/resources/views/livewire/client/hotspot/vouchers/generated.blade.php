@@ -38,7 +38,7 @@
         <div class="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-xl mb-4">
             <span class="text-sm font-medium">{{ count($selectedVouchers) }} selected</span>
             <button class="btn btn-ghost btn-sm gap-1"
-                onclick="showBulkVoucherPrint()">
+                x-data x-on:click="$dispatch('open-print-modal', { mode: 'bulk-vouchers', batch: null })">
                 <x-mary-icon name="o-printer" class="w-4 h-4" />
                 Print
             </button>
@@ -138,7 +138,8 @@
         @if(count($selectedBatches) > 0)
         <div class="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-xl mb-4">
             <span class="text-sm font-medium">{{ count($selectedBatches) }} batch(es) selected</span>
-            <button class="btn btn-ghost btn-sm gap-1" onclick="showBulkBatchPrint()">
+            <button class="btn btn-ghost btn-sm gap-1"
+                x-data x-on:click="$dispatch('open-print-modal', { mode: 'bulk-batches', batch: null })">
                 <x-mary-icon name="o-printer" class="w-4 h-4" />
                 Print
             </button>
@@ -199,11 +200,13 @@
                             </td>
                             <td>
                                 <div class="flex gap-1">
-                                    <x-mary-button
-                                        icon="o-printer"
-                                        class="btn-ghost btn-xs"
-                                        tooltip="Print batch"
-                                        x-on:click="showVoucherTemplate({{ $batch->batch_code }})" />
+                                    <button type="button"
+                                        class="btn btn-ghost btn-xs lg:tooltip lg:tooltip-top"
+                                        data-tip="Print batch"
+                                        x-data
+                                        x-on:click="$dispatch('open-print-modal', { mode: 'single', batch: {{ $batch->batch_code }} })">
+                                        <x-mary-icon name="o-printer" />
+                                    </button>
                                     <x-mary-button
                                         icon="o-trash"
                                         class="btn-ghost btn-xs btn-error"
@@ -229,17 +232,12 @@
         </div>
     </x-mary-card>
 
-    {{-- Print template modal (Alpine-driven, no jQuery) --}}
+    {{-- Print template modal (pure Alpine, no global functions needed) --}}
     <div
         x-data="{
-            open: false,
+            showModal: false,
             selectedBatch: null,
             printMode: 'single',
-            open(mode, batch) {
-                this.printMode = mode;
-                this.selectedBatch = batch ?? null;
-                this.open = true;
-            },
             printNow() {
                 const tpl = document.getElementById('print_template').value;
                 if (this.printMode === 'single') {
@@ -251,14 +249,12 @@
                     const ids = @this.getSelectedBatchesForPrint();
                     window.open('print?batches=' + ids + '&template=' + tpl);
                 }
-                this.open = false;
+                this.showModal = false;
             }
         }"
-        @show-voucher-template.window="open('single', $event.detail)"
-        @show-bulk-voucher-print.window="open('bulk-vouchers', null)"
-        @show-bulk-batch-print.window="open('bulk-batches', null)"
+        x-on:open-print-modal.window="printMode = $event.detail.mode; selectedBatch = $event.detail.batch; showModal = true"
     >
-        <div x-show="open" class="modal modal-open" x-cloak role="dialog" aria-modal="true" aria-label="Print vouchers">
+        <div x-show="showModal" class="modal modal-open" x-cloak role="dialog" aria-modal="true" aria-label="Print vouchers">
             <div class="modal-box max-w-sm">
                 <h3 class="font-bold text-lg mb-4">Print Vouchers</h3>
                 <div class="form-control mb-4">
@@ -271,29 +267,14 @@
                     </select>
                 </div>
                 <div class="modal-action">
-                    <button class="btn btn-ghost" @click="open = false">Cancel</button>
+                    <button class="btn btn-ghost" @click="showModal = false">Cancel</button>
                     <button class="btn btn-primary gap-1.5" @click="printNow()">
                         <x-mary-icon name="o-printer" class="w-4 h-4" />
                         Print Now
                     </button>
                 </div>
             </div>
-            <div class="modal-backdrop" @click="open = false"></div>
+            <div class="modal-backdrop" @click="showModal = false"></div>
         </div>
     </div>
 </div>
-
-@push('scripts-bottom')
-<script>
-    // Legacy helpers for inline onclick="showVoucherTemplate()" calls
-    function showVoucherTemplate(batch) {
-        window.dispatchEvent(new CustomEvent('show-voucher-template', { detail: batch }));
-    }
-    function showBulkVoucherPrint() {
-        window.dispatchEvent(new CustomEvent('show-bulk-voucher-print'));
-    }
-    function showBulkBatchPrint() {
-        window.dispatchEvent(new CustomEvent('show-bulk-batch-print'));
-    }
-</script>
-@endpush
