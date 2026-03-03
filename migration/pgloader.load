@@ -18,10 +18,17 @@ SET
 
 CAST
   type tinyint to boolean using tinyint-to-boolean,
-  type int with extra auto_increment to serial,
-  type bigint with extra auto_increment to bigserial,
-  type datetime to "timestamp without time zone",
-  type varchar to text drop typemod
+  type tinyint to smallint drop typemod,
+  type smallint to smallint drop typemod,
+  type int with extra auto_increment to serial drop typemod,
+  type int to integer drop typemod,
+  type bigint with extra auto_increment to bigserial drop typemod,
+  type bigint to bigint drop typemod,
+  type decimal to numeric,
+  type datetime to "timestamp without time zone" drop typemod,
+  type timestamp to "timestamp without time zone" drop typemod,
+  type varchar to text drop typemod,
+  type char to text drop typemod
 
 ALTER SCHEMA '{{MYSQL_DB}}' RENAME TO 'public'
 ;
