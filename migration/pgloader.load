@@ -1,0 +1,27 @@
+LOAD DATABASE
+  FROM mysql://{{MYSQL_USER}}:{{MYSQL_PASS}}@{{MYSQL_HOST}}:{{MYSQL_PORT}}/{{MYSQL_DB}}
+  INTO postgresql://{{PG_USER}}:{{PG_PASS}}@{{PG_HOST}}:{{PG_PORT}}/{{PG_DB}}
+
+WITH
+  include drop,
+  create tables,
+  create indexes,
+  reset sequences,
+  workers = 4,
+  concurrency = 2,
+  batch rows = 1000,
+  prefetch rows = 1000
+
+SET
+  maintenance_work_mem to '128MB',
+  work_mem to '64MB'
+
+CAST
+  type tinyint to boolean using tinyint-to-boolean,
+  type int with extra auto_increment to serial,
+  type bigint with extra auto_increment to bigserial,
+  type datetime to "timestamp without time zone",
+  type varchar to text drop typemod
+
+ALTER SCHEMA '{{MYSQL_DB}}' RENAME TO 'public'
+;
