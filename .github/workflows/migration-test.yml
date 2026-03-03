@@ -17,7 +17,10 @@ jobs:
 
     services:
       mysql:
-        image: mysql:8
+        # Use 8.0 specifically: pgloader's qmynd driver does not support
+        # caching_sha2_password (default in 8.4+). 8.0 uses
+        # mysql_native_password by default which qmynd supports.
+        image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: test
           MYSQL_USER: mendyfi
@@ -38,11 +41,6 @@ jobs:
       - name: Seed MySQL with test data
         run: |
           mysql -h 127.0.0.1 -P 3306 -u root -ptest < migration/seed-test-data.sql
-
-      - name: Set root to mysql_native_password (required by pgloader qmynd driver)
-        run: |
-          mysql -h 127.0.0.1 -P 3306 -u root -ptest \
-            -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'test';"
 
       - name: Create .env for migration
         run: |
