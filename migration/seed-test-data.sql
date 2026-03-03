@@ -1,6 +1,9 @@
 -- seed-test-data.sql
 -- Creates a realistic mendyfi MySQL dataset for migration testing.
 -- Run against a fresh MySQL 8 instance.
+--
+-- NOTE: Tenant database names use backtick-quoting to allow hyphens,
+-- matching how MendyFi names tenant DBs from tenant IDs at runtime.
 
 -- Central database tables (simplified -- matches mendyfi schema)
 CREATE DATABASE IF NOT EXISTS mendyfi_central;
@@ -44,25 +47,27 @@ CREATE TABLE IF NOT EXISTS app_settings (
 INSERT INTO users (name, email, password) VALUES
     ('Admin', 'admin@mendyfi.test', '$2y$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012');
 
--- Seed 3 tenants
+-- Seed 3 tenants (IDs match tenant DB names via mendyfi_tenant_<id> convention)
 INSERT INTO tenants (id, data) VALUES
-    ('t-alpha-0001-0001-000000000001', '{"plan": "basic"}'),
-    ('t-bravo-0002-0002-000000000002', '{"plan": "pro"}'),
-    ('t-charlie-003-0003-000000000003', '{"plan": "basic"}');
+    ('alpha-tenant-0001', '{"plan": "basic"}'),
+    ('bravo-tenant-0002', '{"plan": "pro"}'),
+    ('charlie-tenant-003', '{"plan": "basic"}');
 
 INSERT INTO domains (domain, username, tenant_id) VALUES
-    ('alpha.mendyfi.test', 'alpha', 't-alpha-0001-0001-000000000001'),
-    ('bravo.mendyfi.test', 'bravo', 't-bravo-0002-0002-000000000002'),
-    ('charlie.mendyfi.test', 'charlie', 't-charlie-003-0003-000000000003');
+    ('alpha.mendyfi.test', 'alpha', 'alpha-tenant-0001'),
+    ('bravo.mendyfi.test', 'bravo', 'bravo-tenant-0002'),
+    ('charlie.mendyfi.test', 'charlie', 'charlie-tenant-003');
 
 INSERT INTO app_settings (`key`, value) VALUES
     ('app_name', 'MendyFi'),
     ('timezone', 'America/Guyana');
 
--- Create tenant databases with sample data
+-- Create tenant databases with sample data.
+-- Database names use backtick-quoting to support hyphens (matching tenant IDs).
+
 -- Tenant: alpha
-CREATE DATABASE IF NOT EXISTS mendyfi_tenant_t_alpha_0001_0001_000000000001;
-USE mendyfi_tenant_t_alpha_0001_0001_000000000001;
+CREATE DATABASE IF NOT EXISTS `mendyfi_tenant_alpha-tenant-0001`;
+USE `mendyfi_tenant_alpha-tenant-0001`;
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -170,14 +175,14 @@ INSERT INTO sales_records (user_id, code, hotspot_profile_id, reseller_id, amoun
     (1, 'ALPHA-017', 1, NULL, 100.00, 'AA:BB:CC:DD:EE:10', '10.0.0.110', '2026-02-23 10:00:00');
 
 -- Tenant: bravo (smaller dataset)
-CREATE DATABASE IF NOT EXISTS mendyfi_tenant_t_bravo_0002_0002_000000000002;
-USE mendyfi_tenant_t_bravo_0002_0002_000000000002;
+CREATE DATABASE IF NOT EXISTS `mendyfi_tenant_bravo-tenant-0002`;
+USE `mendyfi_tenant_bravo-tenant-0002`;
 
-CREATE TABLE IF NOT EXISTS users LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.users;
-CREATE TABLE IF NOT EXISTS resellers LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.resellers;
-CREATE TABLE IF NOT EXISTS hotspot_profiles LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.hotspot_profiles;
-CREATE TABLE IF NOT EXISTS hotspot_vouchers LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.hotspot_vouchers;
-CREATE TABLE IF NOT EXISTS sales_records LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.sales_records;
+CREATE TABLE IF NOT EXISTS users LIKE `mendyfi_tenant_alpha-tenant-0001`.users;
+CREATE TABLE IF NOT EXISTS resellers LIKE `mendyfi_tenant_alpha-tenant-0001`.resellers;
+CREATE TABLE IF NOT EXISTS hotspot_profiles LIKE `mendyfi_tenant_alpha-tenant-0001`.hotspot_profiles;
+CREATE TABLE IF NOT EXISTS hotspot_vouchers LIKE `mendyfi_tenant_alpha-tenant-0001`.hotspot_vouchers;
+CREATE TABLE IF NOT EXISTS sales_records LIKE `mendyfi_tenant_alpha-tenant-0001`.sales_records;
 
 INSERT INTO users (name, email, password) VALUES
     ('Bravo Admin', 'admin@bravo.test', '$2y$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012');
@@ -196,14 +201,14 @@ INSERT INTO sales_records (user_id, code, hotspot_profile_id, amount, mac_addres
     (1, 'BRAVO-005', 1, 50.00, 'BB:CC:DD:EE:FF:02', '192.168.1.102', '2026-02-22 14:30:00');
 
 -- Tenant: charlie (empty -- edge case test)
-CREATE DATABASE IF NOT EXISTS mendyfi_tenant_t_charlie_003_0003_000000000003;
-USE mendyfi_tenant_t_charlie_003_0003_000000000003;
+CREATE DATABASE IF NOT EXISTS `mendyfi_tenant_charlie-tenant-003`;
+USE `mendyfi_tenant_charlie-tenant-003`;
 
-CREATE TABLE IF NOT EXISTS users LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.users;
-CREATE TABLE IF NOT EXISTS resellers LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.resellers;
-CREATE TABLE IF NOT EXISTS hotspot_profiles LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.hotspot_profiles;
-CREATE TABLE IF NOT EXISTS hotspot_vouchers LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.hotspot_vouchers;
-CREATE TABLE IF NOT EXISTS sales_records LIKE mendyfi_tenant_t_alpha_0001_0001_000000000001.sales_records;
+CREATE TABLE IF NOT EXISTS users LIKE `mendyfi_tenant_alpha-tenant-0001`.users;
+CREATE TABLE IF NOT EXISTS resellers LIKE `mendyfi_tenant_alpha-tenant-0001`.resellers;
+CREATE TABLE IF NOT EXISTS hotspot_profiles LIKE `mendyfi_tenant_alpha-tenant-0001`.hotspot_profiles;
+CREATE TABLE IF NOT EXISTS hotspot_vouchers LIKE `mendyfi_tenant_alpha-tenant-0001`.hotspot_vouchers;
+CREATE TABLE IF NOT EXISTS sales_records LIKE `mendyfi_tenant_alpha-tenant-0001`.sales_records;
 
 INSERT INTO users (name, email, password) VALUES
     ('Charlie Admin', 'admin@charlie.test', '$2y$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012');
