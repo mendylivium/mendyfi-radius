@@ -1,0 +1,76 @@
+name: Migration Test
+
+on:
+  push:
+    paths:
+      - 'migration/**'
+      - '.github/workflows/migration-test.yml'
+  pull_request:
+    paths:
+      - 'migration/**'
+      - '.github/workflows/migration-test.yml'
+
+jobs:
+  test-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_USER: mendyfi
+          MYSQL_PASSWORD: mendyfi_test
+          MYSQL_DATABASE: mendyfi_central
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -ptest"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Seed MySQL with test data
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -ptest < migration/seed-test-data.sql
+
+      - name: Create .env for migration
+        run: |
+          cat > .env <<'ENVEOF'
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=mendyfi_central
+          DB_USERNAME=root
+          DB_PASSWORD=test
+          ENVEOF
+
+      - name: Run migration dry-run first
+        run: ./migration/migrate.sh --dry-run
+
+      - name: Run migration
+        env:
+          PG_USER: mendyfi
+          PG_PASS: mendyfi_test_pg
+          CI_MODE: "true"
+        run: ./migration/migrate.sh --ci-mode --pg-port 5433
+
+      - name: Verify PostgreSQL databases exist
+        run: |
+          docker compose -f migration/docker-compose.migrate.yml exec -T postgres \
+            psql -U mendyfi -d mendyfi_central -c "SELECT COUNT(*) FROM tenants;"
+
+      - name: Verify tenant databases
+        run: |
+          docker compose -f migration/docker-compose.migrate.yml exec -T postgres \
+            psql -U mendyfi -l | grep mendyfi_tenant
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd migration && docker compose -f docker-compose.migrate.yml down -v 2>/dev/null || true
