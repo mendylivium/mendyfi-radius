@@ -277,42 +277,47 @@ done
 # ---------------------
 step 5 "Migrate data with pgloader"
 
-# Generate pgloader config from template for a given database pair
+# Generate pgloader config from template for a given database pair.
+# pgloader runs with --network host so both MySQL and PostgreSQL are
+# reachable via 127.0.0.1 (host loopback). PG_PORT is the host-mapped
+# port (default 5433), not the internal container port.
 generate_pgloader_config() {
     local mysql_db="$1"
     local pg_db="$2"
     local config_file="$SCRIPT_DIR/pgloader-run.load"
 
-    # pgloader runs inside a Docker container on migrate-net.
-    # If MySQL is on 127.0.0.1 or localhost (the Docker host), translate
-    # to host.docker.internal so the container can actually reach it.
-    local pgloader_mysql_host="$MYSQL_HOST"
-    if [[ "$MYSQL_HOST" == "127.0.0.1" || "$MYSQL_HOST" == "localhost" ]]; then
-        pgloader_mysql_host="host.docker.internal"
-    fi
-
     sed \
         -e "s|{{MYSQL_USER}}|$MYSQL_USER|g" \
         -e "s|{{MYSQL_PASS}}|$MYSQL_PASS|g" \
-        -e "s|{{MYSQL_HOST}}|$pgloader_mysql_host|g" \
+        -e "s|{{MYSQL_HOST}}|$MYSQL_HOST|g" \
         -e "s|{{MYSQL_PORT}}|$MYSQL_PORT|g" \
         -e "s|{{MYSQL_DB}}|$mysql_db|g" \
         -e "s|{{PG_USER}}|$PG_USER|g" \
         -e "s|{{PG_PASS}}|$PG_PASS|g" \
-        -e "s|{{PG_HOST}}|postgres|g" \
-        -e "s|{{PG_PORT}}|5432|g" \
+        -e "s|{{PG_HOST}}|$PG_HOST|g" \
+        -e "s|{{PG_PORT}}|$PG_PORT|g" \
         -e "s|{{PG_DB}}|$pg_db|g" \
         "$SCRIPT_DIR/pgloader.load" > "$config_file"
 
     echo "$config_file"
 }
 
+# Run pgloader with --network host so it can reach:
+#   - MySQL at MYSQL_HOST:MYSQL_PORT (host loopback or network address)
+#   - PostgreSQL at PG_HOST:PG_PORT (host-mapped port from docker-compose.migrate.yml)
+run_pgloader() {
+    local config_file="$1"
+    docker run --rm \
+        --network host \
+        -v "$config_file:/migration/pgloader.load:ro" \
+        dimitri/pgloader:v3.6.7 \
+        pgloader /migration/pgloader.load 2>&1 | tail -20
+}
+
 # Migrate central database
 log "Migrating central database..."
 CONFIG=$(generate_pgloader_config "$MYSQL_DB" "mendyfi_central")
-docker compose -f docker-compose.migrate.yml run --rm \
-    -v "$CONFIG:/migration/pgloader.load:ro" \
-    pgloader pgloader /migration/pgloader.load 2>&1 | tail -20
+run_pgloader "$CONFIG"
 log "Central database: MIGRATED"
 
 # Migrate each tenant database
@@ -321,9 +326,7 @@ for TENANT_ID in ${TENANT_DBS:-}; do
     TENANT_PG="${DB_PREFIX}${TENANT_ID}"
     log "Migrating tenant: $TENANT_ID..."
     CONFIG=$(generate_pgloader_config "$TENANT_MYSQL" "$TENANT_PG")
-    docker compose -f docker-compose.migrate.yml run --rm \
-        -v "$CONFIG:/migration/pgloader.load:ro" \
-        pgloader pgloader /migration/pgloader.load 2>&1 | tail -5
+    run_pgloader "$CONFIG" | tail -5
 done
 log "All databases migrated"
 

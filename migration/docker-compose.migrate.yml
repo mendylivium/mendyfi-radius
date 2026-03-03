@@ -1,15 +1,15 @@
 name: mendyfi-migration
 
 services:
+  # pgloader is not run via compose -- migrate.sh runs it with docker run --network host
+  # so it can reach both MySQL and PostgreSQL via the host loopback (127.0.0.1).
+  # This service definition is kept as documentation / fallback only.
   pgloader:
     image: dimitri/pgloader:v3.6.7
     volumes:
       - ./pgloader.load:/migration/pgloader.load:ro
     networks:
       - migrate-net
-    # Allows pgloader to reach MySQL running on the Docker host (127.0.0.1 or localhost)
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
