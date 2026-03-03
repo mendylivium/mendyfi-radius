@@ -2,7 +2,7 @@ name: mendyfi-migration
 
 services:
   pgloader:
-    image: dimitri/pgloader:latest
+    image: dimitri/pgloader:ccl-1.3.6
     volumes:
       - ./pgloader.load:/migration/pgloader.load:ro
     networks:

@@ -62,12 +62,12 @@ jobs:
 
       - name: Verify PostgreSQL databases exist
         run: |
-          docker compose -f migration/docker-compose.migrate.yml exec -T postgres \
+          cd migration && docker compose -f docker-compose.migrate.yml exec -T postgres \
             psql -U mendyfi -d mendyfi_central -c "SELECT COUNT(*) FROM tenants;"
 
       - name: Verify tenant databases
         run: |
-          docker compose -f migration/docker-compose.migrate.yml exec -T postgres \
+          cd migration && docker compose -f docker-compose.migrate.yml exec -T postgres \
             psql -U mendyfi -l | grep mendyfi_tenant
 
       - name: Cleanup

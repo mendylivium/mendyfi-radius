@@ -51,4 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_hotspot_vouchers_code ON hotspot_vouchers(code);
 CREATE INDEX IF NOT EXISTS idx_resellers_user_id ON resellers(user_id);
 
 -- 4. Set search_path for application user
-ALTER DATABASE current_database() SET search_path TO public;
+DO $$
+BEGIN
+    EXECUTE format('ALTER DATABASE %I SET search_path TO public', current_database());
+END $$;

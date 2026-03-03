@@ -5,7 +5,7 @@ set -euo pipefail
 # Usage: ./migration/rollback.sh [--backup-dir DIR]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKUP_DIR="${1:---backup-dir}"
+BACKUP_DIR=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
