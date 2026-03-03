@@ -42,6 +42,13 @@ jobs:
         run: |
           mysql -h 127.0.0.1 -P 3306 -u root -ptest < migration/seed-test-data.sql
 
+      - name: Switch root auth to mysql_native_password for pgloader compatibility
+        # pgloader's qmynd driver does not support caching_sha2_password (MySQL 8.0+ default).
+        # MySQL 8.0 still has the mysql_native_password plugin available (unlike 8.4+ which removed it).
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -ptest \
+            -e "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'test'; FLUSH PRIVILEGES;"
+
       - name: Create .env for migration
         run: |
           cat > .env <<'ENVEOF'
