@@ -155,11 +155,11 @@ class ResellerList extends Component
         ->selectRaw(
             '*, ' .
             '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id) as total_sales, ' .
-            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = ?) as earnToday, ' .
-            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = ?) as earnYesterday, ' .
-            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) >= ? AND DATE(transact_date) <= ?) as earnThisWeek, ' .
-            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND EXTRACT(MONTH FROM transact_date) = ?) as earnThisMonth, ' .
-            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND EXTRACT(MONTH FROM transact_date) = ?) as earnLastMonth, ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = ?) as "earnToday", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = ?) as "earnYesterday", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) >= ? AND DATE(transact_date) <= ?) as "earnThisWeek", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND EXTRACT(MONTH FROM transact_date) = ?) as "earnThisMonth", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND EXTRACT(MONTH FROM transact_date) = ?) as "earnLastMonth", ' .
             '(SELECT count(id) FROM hotspot_vouchers WHERE connected = true AND reseller_id = resellers.id) as active_vouchers, ' .
             '(SELECT count(id) FROM hotspot_vouchers WHERE used_date IS NULL AND reseller_id = resellers.id) as available_vouchers',
             [$today, $yesterday, $currentWeekStart, $currentWeekEnd, $currentMonth, $lastMonth]

@@ -60,12 +60,12 @@ class Dashboard extends Component
         return SalesRecord::query()
             ->where('user_id', $this->user->id)
             ->selectRaw('
-            COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnToday,
-            COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as earnYesterday,
-            COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnThisWeek,
-            COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as earnLastWeek,
-            COALESCE(SUM(CASE WHEN EXTRACT(MONTH FROM transact_date) = ? AND EXTRACT(YEAR FROM transact_date) = EXTRACT(YEAR FROM NOW()) THEN amount ELSE 0 END), 0) as earnThisMonth,
-            COALESCE(SUM(CASE WHEN EXTRACT(MONTH FROM transact_date) = ? AND EXTRACT(YEAR FROM transact_date) = ? THEN amount ELSE 0 END), 0) as earnLastMonth',
+            COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as "earnToday",
+            COALESCE(SUM(CASE WHEN DATE(transact_date) = ? THEN amount ELSE 0 END), 0) as "earnYesterday",
+            COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as "earnThisWeek",
+            COALESCE(SUM(CASE WHEN DATE(transact_date) >= ? AND DATE(transact_date) <= ? THEN amount ELSE 0 END), 0) as "earnLastWeek",
+            COALESCE(SUM(CASE WHEN EXTRACT(MONTH FROM transact_date) = ? AND EXTRACT(YEAR FROM transact_date) = EXTRACT(YEAR FROM NOW()) THEN amount ELSE 0 END), 0) as "earnThisMonth",
+            COALESCE(SUM(CASE WHEN EXTRACT(MONTH FROM transact_date) = ? AND EXTRACT(YEAR FROM transact_date) = ? THEN amount ELSE 0 END), 0) as "earnLastMonth"',
             [$today, $yesterday, $currentWeekStart, $currentWeekEnd, $lastWeekStart, $lastWeekEnd, $currentMonth, $lastMonth, $lastMonthYear])
             ->first();
     }
