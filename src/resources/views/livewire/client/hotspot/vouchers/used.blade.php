@@ -92,11 +92,11 @@
 
     <x-mary-card shadow>
         <div class="overflow-x-auto" wire:loading.class="opacity-50">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Used vouchers">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th class="w-10">
-                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm" />
+                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm" aria-label="Select all vouchers" />
                         </th>
                         <th>Voucher</th>
                         <th>Status</th>

@@ -52,11 +52,11 @@
         @endif
 
         <div class="overflow-x-auto" wire:loading.class="opacity-50">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Individual vouchers">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th class="w-10">
-                            <input type="checkbox" wire:model.live="selectAllVouchers" class="checkbox checkbox-sm" />
+                            <input type="checkbox" wire:model.live="selectAllVouchers" class="checkbox checkbox-sm" aria-label="Select all vouchers" />
                         </th>
                         <th>Voucher</th>
                         <th>Credit</th>
@@ -152,11 +152,11 @@
         @endif
 
         <div class="overflow-x-auto" wire:loading.class="opacity-50">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Voucher batches">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th class="w-10">
-                            <input type="checkbox" wire:model.live="selectAllBatches" class="checkbox checkbox-sm" />
+                            <input type="checkbox" wire:model.live="selectAllBatches" class="checkbox checkbox-sm" aria-label="Select all batches" />
                         </th>
                         <th>Batch Code</th>
                         <th>Profile</th>
@@ -258,7 +258,7 @@
         @show-bulk-voucher-print.window="open('bulk-vouchers', null)"
         @show-bulk-batch-print.window="open('bulk-batches', null)"
     >
-        <div x-show="open" class="modal modal-open" x-cloak>
+        <div x-show="open" class="modal modal-open" x-cloak role="dialog" aria-modal="true" aria-label="Print vouchers">
             <div class="modal-box max-w-sm">
                 <h3 class="font-bold text-lg mb-4">Print Vouchers</h3>
                 <div class="form-control mb-4">

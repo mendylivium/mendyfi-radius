@@ -46,7 +46,7 @@
                         <div class="flex flex-wrap items-center gap-3">
                             @if($currentLogo)
                                 <img src="{{ Storage::url($currentLogo) }}" alt="Current Logo"
-                                    style="max-height: 60px; max-width: 200px;" class="rounded-lg border border-base-300">
+                                    style="max-height: 60px; max-width: 200px;" class="rounded-lg border border-base-300" loading="lazy" width="200" height="60" alt="Company logo">
                                 <button type="button" wire:click="removeLogo" class="btn btn-error btn-outline btn-sm">
                                     <x-mary-icon name="o-x-mark" class="w-4 h-4" />
                                     Remove
@@ -61,7 +61,7 @@
                                     <x-mary-icon name="o-check-circle" class="w-4 h-4" />
                                     New logo selected -- click Save to apply
                                 </span>
-                                <img src="{{ $logo->temporaryUrl() }}" alt="Preview" style="max-height: 60px;" class="rounded-lg border border-base-300">
+                                <img src="{{ $logo->temporaryUrl() }}" alt="Preview" style="max-height: 60px;" class="rounded-lg border border-base-300" width="200" height="60">
                             </div>
                         @endif
 
@@ -80,7 +80,7 @@
                         <div class="flex flex-wrap items-center gap-3">
                             @if($currentFavicon)
                                 <img src="{{ Storage::url($currentFavicon) }}" alt="Current Favicon"
-                                    style="width: 32px; height: 32px;" class="rounded-lg border border-base-300">
+                                    style="width: 32px; height: 32px;" class="rounded-lg border border-base-300" loading="lazy" width="32" height="32" alt="Favicon">
                                 <button type="button" wire:click="removeFavicon" class="btn btn-error btn-outline btn-sm">
                                     <x-mary-icon name="o-x-mark" class="w-4 h-4" />
                                     Remove
@@ -95,7 +95,7 @@
                                     <x-mary-icon name="o-check-circle" class="w-4 h-4" />
                                     New favicon selected
                                 </span>
-                                <img src="{{ $favicon->temporaryUrl() }}" alt="Preview" style="width: 32px; height: 32px;" class="rounded-lg border border-base-300">
+                                <img src="{{ $favicon->temporaryUrl() }}" alt="Preview" style="width: 32px; height: 32px;" class="rounded-lg border border-base-300" loading="lazy" width="32" height="32" alt="Favicon">
                             </div>
                         @endif
 

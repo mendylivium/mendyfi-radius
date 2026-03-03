@@ -21,7 +21,7 @@
         <div class="mb-4">
             <label class="input input-bordered flex items-center gap-2 max-w-sm">
                 <x-mary-icon name="o-magnifying-glass" class="w-4 h-4 text-base-content/40" />
-                <input type="text" wire:model.live.debounce.500ms="searchStr"
+                <input type="search" wire:model.live.debounce.500ms="searchStr"
                     placeholder="Search resellers..." class="grow" />
             </label>
         </div>
@@ -133,11 +133,11 @@
 
         {{-- Desktop Table View --}}
         <div class="hidden md:block overflow-x-auto">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Reseller accounts">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th class="w-10">
-                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm">
+                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm" aria-label="Select all resellers">
                         </th>
                         <th>ID</th>
                         <th>Details</th>

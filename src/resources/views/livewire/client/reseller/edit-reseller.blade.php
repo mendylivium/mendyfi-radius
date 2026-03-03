@@ -44,7 +44,7 @@
                         </label>
                         <label class="input input-bordered flex items-center gap-2 w-full">
                             <x-mary-icon name="o-device-phone-mobile" class="w-4 h-4 text-base-content/40" />
-                            <input type="text" wire:model="resellerMobile" class="grow"
+                            <input type="tel" wire:model="resellerMobile" class="grow"
                                 placeholder="Enter Mobile No.">
                         </label>
                         @error('resellerMobile')

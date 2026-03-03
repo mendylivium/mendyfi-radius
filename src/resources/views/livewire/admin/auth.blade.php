@@ -5,8 +5,8 @@
         <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <x-mary-icon name="o-shield-check" class="text-primary-content w-8 h-8" />
         </div>
-        <h1 class="text-2xl font-bold text-base-content">Admin Login</h1>
-        <p class="text-sm text-base-content/60 mt-1">Hotspot Manager Administration</p>
+        <h1 class="text-2xl font-bold text-base-content">KareTech Solutions</h1>
+        <p class="text-sm text-base-content/60 mt-1 font-medium">Hotspot Manager Admin</p>
     </div>
 
     {{-- Login form --}}

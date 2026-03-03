@@ -1,4 +1,4 @@
-<div class="space-y-4" wire:poll.{{ $autoRefresh ? '10s' : '999999s' }}="$refresh">
+<div class="space-y-4" wire:poll.{{ $autoRefresh ? '10s' : '999999s' }}="$refresh" aria-live="polite">
 
     {{-- Page header --}}
     <div class="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -49,11 +49,11 @@
         @if($this->voucher->count() > 0)
         {{-- Desktop table --}}
         <div class="overflow-x-auto" wire:loading.class="opacity-50">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Active sessions">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th class="w-10">
-                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm" />
+                            <input type="checkbox" wire:model.live="selectAll" class="checkbox checkbox-sm" aria-label="Select all sessions" />
                         </th>
                         <th>Voucher</th>
                         <th>Session</th>

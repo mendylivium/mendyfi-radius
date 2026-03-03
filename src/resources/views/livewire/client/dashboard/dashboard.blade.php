@@ -1,4 +1,4 @@
-<div class="space-y-6" wire:poll.30s>
+<div class="space-y-6" wire:poll.30s aria-live="polite">
 
     {{-- Page header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

@@ -57,6 +57,25 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @stack('styles')
+
+    {{-- Accessibility: skip-to-content link for keyboard/screen reader users --}}
+    <style>
+        .skip-to-content {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            z-index: 9999;
+            padding: 0.75rem 1.5rem;
+            background: var(--p, oklch(50% 0.2 260));
+            color: white;
+            font-weight: 600;
+            border-radius: 0 0 0.5rem 0;
+        }
+        .skip-to-content:focus {
+            left: 0;
+        }
+    </style>
+
     @if($brandUser)
     <style>
         [data-theme="kt-light"],
@@ -136,13 +155,62 @@
             align-items: center;
             gap: 0.5rem;
         }
+
+        /* ── Accessibility: focus-visible outlines ──
+           Keyboard users see a clear ring; mouse users do not. */
+        :focus-visible {
+            outline: 2px solid oklch(65% 0.25 260);
+            outline-offset: 2px;
+            border-radius: 0.25rem;
+        }
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* ── Accessibility: color contrast improvements ──
+           WCAG AA requires 4.5:1 for normal text.
+           /40 opacity on light bg fails; bump to /55 minimum. */
+        .text-base-content\/40 {
+            color: oklch(from var(--bc) l c h / 0.55) !important;
+        }
+
+        /* ── Accessibility: respect reduced motion preference ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ── Mobile font scaling: prevent iOS zoom on focus ── */
+        @media (max-width: 640px) {
+            input, select, textarea {
+                font-size: 1rem !important; /* 16px prevents iOS auto-zoom */
+            }
+        }
+
+        /* ── Accessibility: ensure links/interactive elements are distinguishable ── */
+        a:not(.btn):not([class*="badge"]) {
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
+        }
+
+        /* ── Active/selection state for table rows ── */
+        .table tr.active-row {
+            background-color: oklch(from var(--p) l c h / 0.08);
+        }
     </style>
     @endif
 </head>
 <body class="min-h-screen bg-base-100 font-sans antialiased">
 
+    {{-- Accessibility: skip navigation for keyboard/screen reader users --}}
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
     {{-- Top navbar: rendered outside <x-mary-main> because Main component has no navbar slot --}}
-    <x-mary-nav sticky full-width class="shadow-sm">
+    <x-mary-nav sticky full-width class="shadow-sm" role="navigation" aria-label="Main navigation">
         <x-slot:brand>
             @include('components.partials.navigation-top')
         </x-slot:brand>
@@ -172,7 +240,7 @@
         </x-slot:sidebar>
 
         <x-slot:content class="!p-2 lg:!px-8 lg:!py-5">
-            <div class="max-w-7xl mx-auto w-full">
+            <div id="main-content" class="max-w-7xl mx-auto w-full" role="main">
                 @include('components.partials.flash')
                 {{ $slot }}
             </div>

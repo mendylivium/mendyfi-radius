@@ -15,8 +15,9 @@
                           d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
                 </svg>
             </div>
-            <h1 class="text-xl font-bold text-base-content">{{ $pageTitle ?? config('app.name') }}</h1>
-            <p class="text-sm text-base-content/50 mt-1">Sign in to your account</p>
+            <h1 class="text-xl font-bold text-base-content">KareTech Solutions</h1>
+            <p class="text-sm text-base-content/60 mt-1 font-medium">Hotspot Manager</p>
+            <p class="text-xs text-base-content/50 mt-0.5">Sign in to your account</p>
         </div>
 
         {{-- Error display --}}
@@ -66,8 +67,8 @@
             </div>
         </div>
 
-        <p class="text-center text-xs text-base-content/30 mt-5">
-            Powered by MendyFi Radius
+        <p class="text-center text-xs text-base-content/40 mt-5">
+            Powered by <span class="font-medium">KareTech Solutions</span>
         </p>
     </div>
 </div>

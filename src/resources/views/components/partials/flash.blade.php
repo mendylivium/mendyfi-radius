@@ -9,6 +9,7 @@
                     'alert-warning': toast.type === 'warning',
                     'alert-info': toast.type === 'info'
                 }"
+                role="alert"
                 x-show="toast.visible"
                 x-transition:enter="transition ease-out duration-300 transform"
                 x-transition:enter-start="translate-x-full opacity-0"

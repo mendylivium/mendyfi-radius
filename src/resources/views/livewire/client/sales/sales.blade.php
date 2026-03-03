@@ -69,7 +69,7 @@
                 <label class="text-xs text-base-content/60 font-medium">Search</label>
                 <div class="relative">
                     <x-mary-icon name="o-magnifying-glass" class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40 pointer-events-none" />
-                    <input type="text" wire:model.live.debounce.300ms="search"
+                    <input type="search" wire:model.live.debounce.300ms="search"
                         class="input input-bordered input-sm w-full pl-8"
                         placeholder="Code, MAC, IP...">
                 </div>
@@ -165,7 +165,7 @@
 
         {{-- Desktop table view --}}
         <div class="hidden md:block overflow-x-auto">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Sales records">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th>Voucher Code</th>

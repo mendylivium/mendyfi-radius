@@ -17,7 +17,7 @@
 
     <x-mary-card shadow>
         <div class="overflow-x-auto">
-            <table class="table table-sm">
+            <table class="table table-sm" aria-label="Fair use policies">
                 <thead>
                     <tr class="text-base-content/70 text-xs uppercase">
                         <th class="w-20">ID</th>
