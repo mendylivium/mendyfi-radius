@@ -225,11 +225,7 @@
             </table>
         </div>
 
-        <div class="flex items-center justify-between mt-4">
-            <p class="text-xs text-base-content/50">
-                Showing {{ $this->myTenants->firstItem() ?? 0 }}–{{ $this->myTenants->lastItem() ?? 0 }}
-                of {{ $this->myTenants->total() }} tenants
-            </p>
+        <div class="flex justify-end mt-4">
             {{ $this->myTenants->links() }}
         </div>
     </x-mary-card>

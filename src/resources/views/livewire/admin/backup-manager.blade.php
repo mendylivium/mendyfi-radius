@@ -133,6 +133,7 @@
                 <table class="table table-sm w-full">
                     <thead>
                         <tr class="text-xs text-base-content/60 border-b border-base-200">
+                            <th class="font-medium">Tenant</th>
                             <th class="font-medium">Filename</th>
                             <th class="font-medium">Size</th>
                             <th class="font-medium">Date</th>
@@ -142,6 +143,7 @@
                     <tbody>
                         @foreach ($this->tenantBackups as $backup)
                             <tr class="border-b border-base-200 hover:bg-base-200/50">
+                                <td class="text-sm font-medium">{{ $backup['tenant'] ?? '-' }}</td>
                                 <td class="text-sm font-mono">{{ $backup['name'] }}</td>
                                 <td class="text-sm text-base-content/70">{{ $backup['size'] }}</td>
                                 <td class="text-sm text-base-content/70">{{ $backup['date'] }}</td>

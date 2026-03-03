@@ -51,8 +51,8 @@ class TenantDetail extends Component
             $stats = [
                 'users'           => DB::table('users')->count(),
                 'profiles'        => DB::table('hotspot_profiles')->count(),
-                'vouchers_total'  => DB::table('vouchers')->count(),
-                'vouchers_active' => DB::table('vouchers')->where('status', 'active')->count(),
+                'vouchers_total'  => DB::table('hotspot_vouchers')->count(),
+                'vouchers_active' => DB::table('hotspot_vouchers')->where('status', 'active')->count(),
                 'resellers'       => DB::table('resellers')->count(),
                 'templates'       => DB::table('voucher_templates')->count(),
             ];

@@ -36,7 +36,7 @@ class BackupManager extends Component
         $this->isRunning = false;
     }
 
-    public function downloadBackup(string $type, string $filename): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function downloadBackup(string $type, string $filename)
     {
         $filename = basename($filename);
         $path     = "backups/{$type}/{$filename}";
@@ -46,7 +46,7 @@ class BackupManager extends Component
                 'type'    => 'error',
                 'message' => 'Backup file not found.',
             ]);
-            return response()->noContent();
+            return;
         }
 
         return Storage::disk('local')->download($path, $filename);
@@ -116,8 +116,10 @@ class BackupManager extends Component
         }
 
         foreach (Storage::disk('local')->files($directory) as $file) {
+            $basename = basename($file);
             $files[] = [
-                'name'      => basename($file),
+                'name'      => $basename,
+                'tenant'    => $type === 'tenants' ? explode('_backup-', $basename)[0] : null,
                 'size'      => $this->formatBytes(Storage::disk('local')->size($file)),
                 'date'      => Carbon::createFromTimestamp(Storage::disk('local')->lastModified($file))->format('d M Y H:i'),
                 'timestamp' => Storage::disk('local')->lastModified($file),

@@ -171,6 +171,7 @@ Route::group([
                 
                 Route::get('config', Configuration::class)->name('client.config');
                 Route::get('sales', Sales::class)->name('client.sales');
+                Route::get('sales/report', [\App\Http\Controllers\Client\SalesReportController::class, 'show'])->name('client.sales.report');
             });
     
             Route::group(['prefix' => 'fair_use_policy'], function(){

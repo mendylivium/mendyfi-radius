@@ -9,6 +9,18 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
+            <a href="{{ route('client.sales.report', array_filter([
+                'dateRange' => $dateRange,
+                'dateFrom' => $dateFrom,
+                'dateTo' => $dateTo,
+                'profileFilter' => $profileFilter,
+                'resellerFilter' => $resellerFilter,
+            ])) }}"
+               target="_blank"
+               class="btn btn-primary btn-sm gap-1.5">
+                <x-mary-icon name="o-document-chart-bar" class="w-4 h-4" />
+                <span class="hidden sm:inline">Export Report</span>
+            </a>
             <button class="btn btn-outline btn-sm gap-1.5" wire:click="exportCsv">
                 <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4" />
                 <span class="hidden sm:inline">Export CSV</span>

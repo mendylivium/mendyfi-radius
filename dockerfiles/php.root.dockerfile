@@ -12,7 +12,7 @@ RUN sed -i "s/user = www-data/user = www-data/g" /usr/local/etc/php-fpm.d/www.co
     && sed -i "s/group = www-data/group = www-data/g" /usr/local/etc/php-fpm.d/www.conf \
     && echo "php_admin_flag[log_errors] = on" >> /usr/local/etc/php-fpm.d/www.conf \
     && echo "php_admin_value[error_log] = /var/log/php/fpm-error.log" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "php_admin_value[disable_functions] = exec,passthru,shell_exec,system,proc_open,popen,pcntl_exec" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "php_admin_value[disable_functions] = passthru,shell_exec,system,proc_open,popen,pcntl_exec" >> /usr/local/etc/php-fpm.d/www.conf \
     && echo "php_admin_value[open_basedir] = /var/www/html:/tmp:/var/log/php" >> /usr/local/etc/php-fpm.d/www.conf
 
 RUN apk add --no-cache libpq postgresql-dev \
@@ -24,7 +24,8 @@ RUN mkdir -p /usr/src/php/ext/redis \
     && echo 'redis' >> /usr/src/php-available-exts \
     && docker-php-ext-install redis
 
-RUN apk add --no-cache freeradius-utils mariadb-client postgresql-client curl
+RUN apk add --no-cache freeradius-utils mariadb-client curl \
+    && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.19/main postgresql16-client
 
 RUN apk add --no-cache icu-dev \
     && docker-php-ext-configure intl \
