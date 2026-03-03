@@ -7,6 +7,9 @@ services:
       - ./pgloader.load:/migration/pgloader.load:ro
     networks:
       - migrate-net
+    # Allows pgloader to reach MySQL running on the Docker host (127.0.0.1 or localhost)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy

@@ -42,13 +42,24 @@ BEGIN
 END $$;
 
 -- 3. Add missing indexes that Laravel migrations would create but pgloader might skip
--- (pgloader creates indexes from MySQL, but some may be missed)
-CREATE INDEX IF NOT EXISTS idx_sales_records_user_id ON sales_records(user_id);
-CREATE INDEX IF NOT EXISTS idx_sales_records_transact_date ON sales_records(transact_date);
-CREATE INDEX IF NOT EXISTS idx_sales_records_profile ON sales_records(hotspot_profile_id);
-CREATE INDEX IF NOT EXISTS idx_hotspot_vouchers_user_id ON hotspot_vouchers(user_id);
-CREATE INDEX IF NOT EXISTS idx_hotspot_vouchers_code ON hotspot_vouchers(code);
-CREATE INDEX IF NOT EXISTS idx_resellers_user_id ON resellers(user_id);
+-- Guards check table existence so this script is safe to run on both central and tenant DBs.
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'sales_records') THEN
+        CREATE INDEX IF NOT EXISTS idx_sales_records_user_id ON sales_records(user_id);
+        CREATE INDEX IF NOT EXISTS idx_sales_records_transact_date ON sales_records(transact_date);
+        CREATE INDEX IF NOT EXISTS idx_sales_records_profile ON sales_records(hotspot_profile_id);
+    END IF;
+
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'hotspot_vouchers') THEN
+        CREATE INDEX IF NOT EXISTS idx_hotspot_vouchers_user_id ON hotspot_vouchers(user_id);
+        CREATE INDEX IF NOT EXISTS idx_hotspot_vouchers_code ON hotspot_vouchers(code);
+    END IF;
+
+    IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'resellers') THEN
+        CREATE INDEX IF NOT EXISTS idx_resellers_user_id ON resellers(user_id);
+    END IF;
+END $$;
 
 -- 4. Set search_path for application user
 DO $$

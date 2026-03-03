@@ -283,10 +283,18 @@ generate_pgloader_config() {
     local pg_db="$2"
     local config_file="$SCRIPT_DIR/pgloader-run.load"
 
+    # pgloader runs inside a Docker container on migrate-net.
+    # If MySQL is on 127.0.0.1 or localhost (the Docker host), translate
+    # to host.docker.internal so the container can actually reach it.
+    local pgloader_mysql_host="$MYSQL_HOST"
+    if [[ "$MYSQL_HOST" == "127.0.0.1" || "$MYSQL_HOST" == "localhost" ]]; then
+        pgloader_mysql_host="host.docker.internal"
+    fi
+
     sed \
         -e "s|{{MYSQL_USER}}|$MYSQL_USER|g" \
         -e "s|{{MYSQL_PASS}}|$MYSQL_PASS|g" \
-        -e "s|{{MYSQL_HOST}}|$MYSQL_HOST|g" \
+        -e "s|{{MYSQL_HOST}}|$pgloader_mysql_host|g" \
         -e "s|{{MYSQL_PORT}}|$MYSQL_PORT|g" \
         -e "s|{{MYSQL_DB}}|$mysql_db|g" \
         -e "s|{{PG_USER}}|$PG_USER|g" \
