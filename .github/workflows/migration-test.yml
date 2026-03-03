@@ -17,10 +17,12 @@ jobs:
 
     services:
       mysql:
-        # Use 8.0 specifically: pgloader's qmynd driver does not support
-        # caching_sha2_password (default in 8.4+). 8.0 uses
-        # mysql_native_password by default which qmynd supports.
-        image: mysql:8.0
+        # Use 5.7: pgloader's qmynd driver only supports mysql_native_password.
+        # MySQL 5.7 uses mysql_native_password by default, avoiding the
+        # caching_sha2_password introduced in MySQL 8.0.4+.
+        # The production app targets MySQL 8 but migration testing uses 5.7
+        # to isolate the auth compatibility issue from pgloader.
+        image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: test
           MYSQL_USER: mendyfi
@@ -42,20 +44,9 @@ jobs:
         run: |
           mysql -h 127.0.0.1 -P 3306 -u root -ptest < migration/seed-test-data.sql
 
-      - name: Create pgloader-compatible user with mysql_native_password
-        # pgloader's qmynd driver does not support caching_sha2_password (MySQL 8.0+ default).
-        # Create a dedicated user with mysql_native_password that pgloader can use.
-        # Grant access from any host (%) since pgloader runs in a Docker container.
-        run: |
-          mysql -h 127.0.0.1 -P 3306 -u root -ptest -e "
-            CREATE USER 'pgloader'@'%' IDENTIFIED WITH mysql_native_password BY 'pgloader_test';
-            GRANT ALL PRIVILEGES ON *.* TO 'pgloader'@'%';
-            FLUSH PRIVILEGES;
-          "
-
       - name: Create .env for migration
         run: |
-          printf 'DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=mendyfi_central\nDB_USERNAME=pgloader\nDB_PASSWORD=pgloader_test\n' > .env
+          printf 'DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=mendyfi_central\nDB_USERNAME=root\nDB_PASSWORD=test\n' > .env
 
       - name: Run migration dry-run first
         run: ./migration/migrate.sh --dry-run
