@@ -56,15 +56,14 @@ class SalesReportController extends Controller
             ->orderByRaw('DATE(transact_date)')
             ->get();
 
-        // Revenue by profile
+        // Revenue by profile -- use profile_name column directly (hotspot_profile_id is NULL for all records)
         $revenueByProfile = (clone $baseQuery)
-            ->leftJoin('hotspot_profiles', 'hotspot_profiles.id', '=', 'sales_records.hotspot_profile_id')
             ->selectRaw("
-                COALESCE(hotspot_profiles.name, 'Unknown') as profile_name,
+                COALESCE(sales_records.profile_name, 'Unknown') as profile_name,
                 SUM(sales_records.amount) as revenue,
                 COUNT(*) as transactions
             ")
-            ->groupByRaw("COALESCE(hotspot_profiles.name, 'Unknown')")
+            ->groupByRaw("COALESCE(sales_records.profile_name, 'Unknown')")
             ->orderByRaw('SUM(sales_records.amount) DESC')
             ->get();
 
@@ -110,6 +109,10 @@ class SalesReportController extends Controller
         // Build filter description for header
         $filterDescription = $this->buildFilterDescription($dateRange, $startDate, $endDate, $profileFilter, $resellerFilter, $user);
 
+        // Available filter options for the filter bar
+        $profiles = DB::table('hotspot_profiles')->orderBy('name')->get(['id', 'name']);
+        $resellers = DB::table('resellers')->orderBy('name')->get(['id', 'name']);
+
         return view('reports.sales-report', compact(
             'summary',
             'dailyRevenue',
@@ -119,6 +122,13 @@ class SalesReportController extends Controller
             'recentTransactions',
             'filterDescription',
             'user',
+            'profiles',
+            'resellers',
+            'dateRange',
+            'profileFilter',
+            'resellerFilter',
+            'dateFrom',
+            'dateTo',
         ));
     }
 

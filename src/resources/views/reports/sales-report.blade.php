@@ -187,8 +187,102 @@
             color: #9ca3af;
         }
 
+        .filter-bar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+        }
+
+        .filter-bar-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        .filter-btn {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover { background: #e5e7eb; }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #3b82f6;
+        }
+
+        .filter-divider {
+            width: 1px;
+            height: 24px;
+            background: #e5e7eb;
+            margin: 0 4px;
+        }
+
+        .filter-select {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f3f4f6;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .filter-date-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-date-input {
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .filter-apply-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #1f2937;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .filter-apply-btn:hover { background: #374151; }
+
         @media print {
             .toolbar { display: none !important; }
+            .filter-bar { display: none !important; }
             body { background: #fff; font-size: 10pt; }
             .report { margin: 0; padding: 0; max-width: 100%; }
             .report-header, .stat-card, .chart-card, .breakdown-table {
@@ -223,6 +317,110 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                 Print / Save PDF
             </button>
+        </div>
+    </div>
+
+    {{-- Filter bar (hidden on print) --}}
+    @php
+        $currentUrl = url()->current();
+        $baseFilters = array_filter([
+            'profileFilter' => request('profileFilter'),
+            'resellerFilter' => request('resellerFilter'),
+        ]);
+        $quickRanges = [
+            'today'      => 'Today',
+            'yesterday'  => 'Yesterday',
+            'this_week'  => 'This Week',
+            'last_week'  => 'Last Week',
+            'this_month' => 'This Month',
+            'last_month' => 'Last Month',
+            'all'        => 'All Time',
+        ];
+    @endphp
+    <div class="filter-bar">
+        <div class="filter-inner" style="max-width:1100px;margin:0 auto;">
+
+            {{-- Quick date range buttons --}}
+            <form method="GET" action="{{ $currentUrl }}" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                <span class="filter-label">Date</span>
+                @foreach($quickRanges as $value => $label)
+                    <a href="{{ $currentUrl . '?' . http_build_query(array_merge($baseFilters, ['dateRange' => $value])) }}"
+                       class="filter-btn {{ $dateRange === $value ? 'active' : '' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+
+                <div class="filter-divider"></div>
+
+                {{-- Custom date range --}}
+                <span class="filter-label">Custom</span>
+                <div class="filter-date-group">
+                    <input type="hidden" name="dateRange" value="custom">
+                    @foreach($baseFilters as $k => $v)
+                        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+                    @endforeach
+                    <input type="date" name="dateFrom" class="filter-date-input"
+                           value="{{ $dateFrom ?? ($dateRange === 'custom' ? request('dateFrom') : '') }}">
+                    <span style="font-size:12px;color:#6b7280;">to</span>
+                    <input type="date" name="dateTo" class="filter-date-input"
+                           value="{{ $dateTo ?? ($dateRange === 'custom' ? request('dateTo') : '') }}">
+                    <button type="submit" class="filter-apply-btn">Apply</button>
+                </div>
+            </form>
+
+            {{-- Profile + Reseller dropdowns --}}
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                @if($profiles->count() > 0)
+                <span class="filter-label">Profile</span>
+                <form method="GET" action="{{ $currentUrl }}">
+                    <input type="hidden" name="dateRange" value="{{ $dateRange }}">
+                    @if($dateRange === 'custom')
+                        @if($dateFrom)<input type="hidden" name="dateFrom" value="{{ $dateFrom }}">@endif
+                        @if($dateTo)<input type="hidden" name="dateTo" value="{{ $dateTo }}">@endif
+                    @endif
+                    @if($resellerFilter)
+                        <input type="hidden" name="resellerFilter" value="{{ $resellerFilter }}">
+                    @endif
+                    <select name="profileFilter" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Profiles</option>
+                        @foreach($profiles as $profile)
+                            <option value="{{ $profile->id }}" {{ (string)$profileFilter === (string)$profile->id ? 'selected' : '' }}>
+                                {{ $profile->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+                @endif
+
+                @if($resellers->count() > 0)
+                <span class="filter-label">Reseller</span>
+                <form method="GET" action="{{ $currentUrl }}">
+                    <input type="hidden" name="dateRange" value="{{ $dateRange }}">
+                    @if($dateRange === 'custom')
+                        @if($dateFrom)<input type="hidden" name="dateFrom" value="{{ $dateFrom }}">@endif
+                        @if($dateTo)<input type="hidden" name="dateTo" value="{{ $dateTo }}">@endif
+                    @endif
+                    @if($profileFilter)
+                        <input type="hidden" name="profileFilter" value="{{ $profileFilter }}">
+                    @endif
+                    <select name="resellerFilter" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Resellers</option>
+                        @foreach($resellers as $reseller)
+                            <option value="{{ $reseller->id }}" {{ (string)$resellerFilter === (string)$reseller->id ? 'selected' : '' }}>
+                                {{ $reseller->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+                @endif
+
+                @if($profileFilter || $resellerFilter || ($dateRange !== 'all' && $dateRange !== null))
+                <a href="{{ $currentUrl }}" class="filter-btn" style="color:#ef4444;border-color:#fca5a5;background:#fef2f2;">
+                    Clear Filters
+                </a>
+                @endif
+            </div>
+
         </div>
     </div>
 
