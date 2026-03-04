@@ -13,7 +13,7 @@ use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedById;
 class Tplink extends Component
 {
     use WithPagination;
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
 
     public $portalTitle = "Mendyfi";
     public $code, $password;

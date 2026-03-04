@@ -17,7 +17,7 @@ class Used extends Component
     use WithPagination;
     use RadiusHelper;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
     public $search = '';
     public $dateRange = 'all';
     public $dateFrom = '';
@@ -241,11 +241,11 @@ class Used extends Component
         // Apply search filter
         $query->when($this->search, function($query) {
             $query->where(function($query) {
-                $query->where('hotspot_vouchers.code', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_vouchers.batch_code', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_profiles.name', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_vouchers.mac_address', 'like', '%' . $this->search . '%')
-                      ->orWhere('hotspot_vouchers.ip_address', 'like', '%' . $this->search . '%');
+                $query->where('hotspot_vouchers.code', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_vouchers.batch_code', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_profiles.name', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_vouchers.mac_address', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('hotspot_vouchers.ip_address', 'ilike', '%' . $this->search . '%');
             });
         });
 

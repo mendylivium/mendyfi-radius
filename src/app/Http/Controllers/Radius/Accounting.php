@@ -273,7 +273,7 @@ class Accounting extends Controller
                         
                         $hasActive = ActiveFairUsePolicy::query()
                         ->select('id')
-                        ->whereRaw("`bind_fair_use_policy_id`='{$bindPolicy->id}' AND `client_id`='{$this->hotspotCustomer->id}' AND NOW() < `resets_on`")
+                        ->whereRaw('bind_fair_use_policy_id = ? AND client_id = ? AND NOW() < resets_on', [$bindPolicy->id, $this->hotspotCustomer->id])
                         ->first();
 
                         if($hasActive) {

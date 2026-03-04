@@ -1,0 +1,10 @@
+# Re-include SQL files in this directory -- they are toolkit source, not database dumps.
+!*.sql
+
+# Exclude generated runtime files
+pgloader-run.load
+.migration.lock
+
+# Exclude backup dumps (kept locally, never committed)
+backups/*.sql
+backups/*.gz

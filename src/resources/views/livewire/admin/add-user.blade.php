@@ -1,62 +1,70 @@
-<div class="row">
-    <div class="col-md-8 order-md-1">
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between py-3">
-                <h6 class="m-0 text-primary">New User</h6>
-            </div>
-            <div class="card-body">
-                <form wire:submit.prevent="addTenant">
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">UserName:</label>
-                        <input type="text" wire:model="userName" class="form-control"placeholder="Enter User Name"
-                            autocomplete="off">
-                        @error('userName')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">Password:</label>
-                        <input type="password" wire:model="password" class="form-control"placeholder="Enter Password"
-                            autocomplete="off">
-                        @error('password')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+<div class="space-y-4">
 
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">Domain Name:</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" wire:model="domain"
-                                placeholder="Enter Domain Name">
-                        </div>
-                        @error('domain')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">Status:</label>
-                        <select class="form-control wire" wire:model="userStatus">
-                            <option value="active">Active</option>
-                            <option value="suspended">Suspended</option>
-                        </select>
-                        @error('userStatus')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-
-                    @error('otherError')
-                        <span class="text text-xs text-danger">{{ $message }}</span>
-                    @enderror
-                    <hr>
-                    <div class="d-flex justify-content-start">
-                        <a class="btn btn-secondary mr-2" href="{{ route('admin.dashboard') }}">Cancel</a>
-                        <button class="btn btn-primary" type="submit">Add User</button>
-                    </div>
-                </form>
-            </div>
+    {{-- Page header --}}
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-base-content">New Tenant</h2>
+            <p class="text-sm text-base-content/60">Create a new hotspot tenant account</p>
         </div>
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost btn-sm gap-1.5">
+            <x-mary-icon name="o-arrow-left" class="w-4 h-4" />
+            Back
+        </a>
     </div>
+
+    <x-mary-card title="Tenant Details" shadow separator>
+        <form wire:submit.prevent="addTenant">
+            <div class="space-y-4">
+                <div>
+                    <label class="label"><span class="label-text font-medium">Username</span></label>
+                    <input type="text" wire:model="userName" class="input input-bordered w-full"
+                        placeholder="Enter username" autocomplete="off">
+                    @error('userName')
+                        <p class="text-error text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="label"><span class="label-text font-medium">Password</span></label>
+                    <input type="password" wire:model="password" class="input input-bordered w-full"
+                        placeholder="Enter password" autocomplete="off">
+                    @error('password')
+                        <p class="text-error text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="label"><span class="label-text font-medium">Domain Name</span></label>
+                    <input type="text" wire:model="domain" class="input input-bordered w-full"
+                        placeholder="e.g. tenant.hotspot.example.com">
+                    @error('domain')
+                        <p class="text-error text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="label"><span class="label-text font-medium">Status</span></label>
+                    <select wire:model="userStatus" class="select select-bordered w-full">
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                    @error('userStatus')
+                        <p class="text-error text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                @error('otherError')
+                    <div class="alert alert-error">
+                        <x-mary-icon name="o-exclamation-circle" class="w-5 h-5" />
+                        <span class="text-sm">{{ $message }}</span>
+                    </div>
+                @enderror
+            </div>
+
+            <x-slot:actions>
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary">Add Tenant</button>
+            </x-slot:actions>
+        </form>
+    </x-mary-card>
 </div>

@@ -20,7 +20,7 @@ class AddUser extends Component
     {
         $this->validate([
             'userName'   =>  'required|unique:domains,username',
-            'password'   =>  'required|min:8',
+            'password'   =>  'required|min:8|regex:/[0-9]/',
             'domain'    =>  'required|unique:domains,domain',
             'userStatus' => 'required|in:active,suspended'
         ]);

@@ -127,7 +127,7 @@ class EditProfile extends Component
     public function availFairUserPolicies()
     {
         return FairUsePolicy::query()
-        ->whereRaw("`id` NOT IN (SELECT `id` FROM `bind_fair_use_policies` WHERE `bind_fair_use_policies`.`hotspot_profile_id` = '" . $this->profileId . "')")
+        ->whereRaw('id NOT IN (SELECT id FROM bind_fair_use_policies WHERE bind_fair_use_policies.hotspot_profile_id = ?)', [$this->profileId])
         ->get();
     }
 

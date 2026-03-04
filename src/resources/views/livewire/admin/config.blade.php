@@ -1,102 +1,84 @@
-<div class="row">
-    <div class="col-12">
-        <x-partials.flash />
+<div class="space-y-4">
+
+    {{-- Page header --}}
+    <div>
+        <h2 class="text-xl font-bold text-base-content">Configurations</h2>
+        <p class="text-sm text-base-content/60">RADIUS settings and account security</p>
     </div>
-    <div class="col-lg-6">
-        <form wire:submit.prevent="editSettings">
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between py-3">
-                    <h6 class="m-0 text-primary">Configuration</h6>
-                </div>
-                <div class="card-body">
 
-                    <div class="form-group">
-                        <label class="text text-xs mb-0">Radius Interim</label>
-                        <div class="input-group">
-                            <input type="number" class="form-control" wire:model="radiusInterim" placeholder="Seconds">
-                            <div class="input-group-append">
-                                <span class="input-group-text">
-                                    Seconds
-                                </span>
-                            </div>
-                        </div>
-                        @error('radiusInterim')
-                            <span class="text text-xs text-danger">{{ $message }}</span>
-                        @enderror
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-                    </div>
-                    <span>
-                        <b>INTERIM UPDATE</b>: This configuration determines the frequency at which your router, modem,
-                        or
-                        NAS will send updates to the RADIUS server.<br /><br />
-                        <b>Note:</b> If your system has limited CPU or RAM resources, it's recommended to set a higher
-                        interval, especially if you're expecting a large number of hotspot users.
-                    </span>
-                </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-sm btn-warning">
-                        <li class="fas fa-sync-alt mr-1">
-                        </li>
-                        Apply Update
-                    </button>
+        {{-- RADIUS settings --}}
+        <x-mary-card title="RADIUS Settings" shadow separator>
+            <div class="space-y-4">
+                <x-mary-input
+                    label="Interim Update (seconds)"
+                    type="number"
+                    wire:model="radiusInterim"
+                    placeholder="e.g. 60"
+                    icon="o-clock"
+                    hint="How often the NAS sends accounting updates to RADIUS" />
+                @error('radiusInterim')
+                    <p class="text-error text-xs -mt-3">{{ $message }}</p>
+                @enderror
+
+                <div class="p-3 bg-base-200 rounded-lg text-sm text-base-content/70 space-y-1">
+                    <p><strong>INTERIM UPDATE</strong>: Frequency at which your router, modem, or NAS sends accounting updates to the RADIUS server.</p>
+                    <p class="text-xs text-base-content/50">If resources are limited, use a higher interval to reduce load when many users are connected.</p>
                 </div>
             </div>
-        </form>
-    </div>
+            <x-slot:actions>
+                <x-mary-button
+                    label="Apply Update"
+                    icon="o-arrow-path"
+                    wire:click="editSettings"
+                    class="btn-warning"
+                    spinner="editSettings" />
+            </x-slot:actions>
+        </x-mary-card>
 
-    <div class="col-lg-6">
-        <form wire:submit.prevent="changePass">
-            <div class="card shadow mb-4">
-                <div class="card-header d-flex justify-content-between py-3">
-                    <h6 class="m-0 text-primary">Change Password</h6>
-                </div>
-                <div class="card-body">
+        {{-- Change password --}}
+        <x-mary-card title="Change Password" shadow separator>
+            <div class="space-y-3">
+                <x-mary-input
+                    label="Current Password"
+                    type="password"
+                    wire:model="currentPassword"
+                    icon="o-lock-closed"
+                    autocomplete="current-password" />
+                @error('currentPassword')
+                    <p class="text-error text-xs -mt-3">{{ $message }}</p>
+                @enderror
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Current Password</label>
-                                <input type="password" wire:model="currentPassword" class="form-control">
-                                @error('currentPassword')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
+                <x-mary-input
+                    label="New Password"
+                    type="password"
+                    wire:model="password"
+                    icon="o-lock-open"
+                    autocomplete="new-password" />
+                @error('password')
+                    <p class="text-error text-xs -mt-3">{{ $message }}</p>
+                @enderror
 
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">New Password</label>
-                                <input type="password" wire:model="password" class="form-control">
-                                @error('password')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label class="text text-xs mb-0">Confirm New Password</label>
-                                <input type="password" wire:model="password_confirmation" class="form-control">
-                                @error('password_confirmation')
-                                    <span class="text text-danger text-xs">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    @error('otherError')
-                        <span class="text text-danger text-xs">{{ $message }}</span>
-                    @enderror
-
-                </div>
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-sm btn-warning">
-                        <li class="fas fa-sync-alt mr-1">
-                        </li>
-                        Change Pass
-                    </button>
-                </div>
+                <x-mary-input
+                    label="Confirm New Password"
+                    type="password"
+                    wire:model="password_confirmation"
+                    icon="o-lock-open"
+                    autocomplete="new-password" />
+                @error('password_confirmation')
+                    <p class="text-error text-xs -mt-3">{{ $message }}</p>
+                @enderror
             </div>
-        </form>
-    </div>
+            <x-slot:actions>
+                <x-mary-button
+                    label="Change Password"
+                    icon="o-arrow-path"
+                    wire:click="changePass"
+                    class="btn-warning"
+                    spinner="changePass" />
+            </x-slot:actions>
+        </x-mary-card>
 
+    </div>
 </div>

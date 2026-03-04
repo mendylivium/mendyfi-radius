@@ -1,76 +1,48 @@
-@props(['logoPath' => null, 'companyName' => null])
+{{-- Mobile: drawer toggle --}}
+<label for="main-drawer" class="lg:hidden mr-2 cursor-pointer">
+    <x-mary-icon name="o-bars-3" class="w-6 h-6 text-base-content" />
+</label>
 
-<!-- Topbar -->
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+{{-- Page title / breadcrumb spacer --}}
+<div class="flex-1 min-w-0">
+    <span class="text-sm font-medium text-base-content/70 hidden sm:inline">
+        @yield('page-title', '')
+    </span>
+</div>
 
-    <!-- Sidebar Toggle (Topbar) -->
-    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-        <i class="fa fa-bars"></i>
-    </button>
+{{-- Right side controls --}}
+<div class="flex items-center gap-1">
 
-    <!-- Brand for mobile -->
-    <div class="d-md-none">
-        @if($logoPath)
-            <img src="{{ Storage::url($logoPath) }}" alt="Logo" style="max-height: 30px;" class="mr-2">
-        @endif
-        <span class="font-weight-bold text-gray-800">{{ $companyName ?? env('APP_NAME') }}</span>
-    </div>
+    {{-- Dark / light theme toggle --}}
+    <x-mary-theme-toggle class="btn btn-ghost btn-sm btn-circle" />
 
-    <!-- Topbar Navbar -->
-    <ul class="navbar-nav ml-auto">
-
-        <!-- Dark Mode Toggle -->
-        <li class="nav-item">
-            <div class="dark-mode-toggle" 
-                x-data="{ 
-                    darkMode: localStorage.getItem('darkMode') === 'true',
-                    init() {
-                        this.$watch('darkMode', val => { 
-                            localStorage.setItem('darkMode', val); 
-                            document.body.setAttribute('data-theme', val ? 'dark' : 'light');
-                        });
-                        if(this.darkMode) {
-                            document.body.setAttribute('data-theme', 'dark');
-                        }
-                    }
-                }">
-                <button @click="darkMode = !darkMode" class="btn btn-link nav-link" title="Toggle Dark Mode">
-                    <i class="fas" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
-                </button>
-            </div>
-        </li>
-
-        <div class="topbar-divider d-none d-sm-block"></div>
-
-        <!-- Nav Item - User Information -->
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ auth()->user()->name }}</span>
-                <img class="img-profile rounded-circle"
-                    src="{{ auth()->user()->picture ?? asset('img/undraw_profile.svg') }}">
-            </a>
-            <!-- Dropdown - User Information -->
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                @if(tenant())
-                    <a class="dropdown-item" href="{{ route('client.settings.branding') }}">
-                        <i class="fas fa-palette fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Branding
-                    </a>
-                    <a class="dropdown-item" href="{{ route('client.config') }}">
-                        <i class="fas fa-cog fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Settings
-                    </a>
-                    <div class="dropdown-divider"></div>
+    {{-- User avatar dropdown --}}
+    <x-mary-dropdown class="ml-1">
+        <x-slot:trigger>
+            <button class="btn btn-ghost btn-sm gap-2 normal-case">
+                @if(auth()->user()->picture ?? false)
+                    <img src="{{ auth()->user()->picture }}" alt="Avatar" class="w-7 h-7 rounded-full object-cover">
+                @else
+                    <div class="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center">
+                        <x-mary-icon name="o-user" class="w-4 h-4 text-primary" />
+                    </div>
                 @endif
-                <a class="dropdown-item" href="{{ route(tenant() ? 'logout' : 'admin.logout') }}">
-                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Logout
-                </a>
-            </div>
-        </li>
+                <span class="hidden md:inline text-sm font-medium text-base-content">
+                    {{ auth()->user()->name ?? 'Account' }}
+                </span>
+                <x-mary-icon name="o-chevron-down" class="w-3 h-3 text-base-content/50" />
+            </button>
+        </x-slot:trigger>
 
-    </ul>
+        @if(tenant())
+            <x-mary-menu-item title="Branding" icon="o-paint-brush" link="{{ route('client.settings.branding') }}" />
+            <x-mary-menu-item title="Settings" icon="o-cog-6-tooth" link="{{ route('client.config') }}" />
+            <x-mary-menu-separator />
+            <x-mary-menu-item title="Sign Out" icon="o-arrow-right-on-rectangle" link="{{ route('logout') }}" />
+        @else
+            <x-mary-menu-separator />
+            <x-mary-menu-item title="Sign Out" icon="o-arrow-right-on-rectangle" link="{{ route('admin.logout') }}" />
+        @endif
+    </x-mary-dropdown>
 
-</nav>
-<!-- End of Topbar -->
+</div>

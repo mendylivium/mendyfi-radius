@@ -11,6 +11,7 @@ use App\Models\HotspotVouchers;
 use App\Models\VoucherTemplate;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Generated extends Component
 {
@@ -18,7 +19,7 @@ class Generated extends Component
     use RadiusHelper;
     use BasicHelper;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
     public $searchVC = '',
     $searchBATCH = '';
 
@@ -117,6 +118,42 @@ class Generated extends Component
         return implode(',', $this->selectedBatches);
     }
 
+    public function exportCsv(): StreamedResponse
+    {
+        $vouchers = HotspotVouchers::query()
+            ->leftJoin('hotspot_profiles', 'hotspot_profiles.id', 'hotspot_vouchers.hotspot_profile_id')
+            ->where('hotspot_vouchers.user_id', $this->user->id)
+            ->whereNull('hotspot_vouchers.used_date')
+            ->select(
+                'hotspot_vouchers.code',
+                'hotspot_vouchers.batch_code',
+                'hotspot_vouchers.generation_date',
+                'hotspot_profiles.name as profile_name',
+                'hotspot_profiles.price',
+                'hotspot_profiles.uptime_limit',
+                'hotspot_profiles.data_limit'
+            )
+            ->orderByDesc('hotspot_vouchers.id')
+            ->get();
+
+        return response()->streamDownload(function () use ($vouchers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Code', 'Batch', 'Profile', 'Price', 'Data Limit', 'Time Limit', 'Generated']);
+            foreach ($vouchers as $v) {
+                fputcsv($handle, [
+                    $v->code,
+                    $v->batch_code,
+                    $v->profile_name,
+                    $v->price,
+                    $v->data_limit > 0 ? $this->convertBytes($v->data_limit) : 'Unlimited',
+                    $v->uptime_limit > 0 ? $this->convertSeconds($v->uptime_limit) : 'Unlimited',
+                    $v->generation_date,
+                ]);
+            }
+            fclose($handle);
+        }, 'generated-vouchers-' . now()->format('Y-m-d') . '.csv');
+    }
+
     public function updatedSearch()
     {
         $this->resetPage();
@@ -160,9 +197,9 @@ class Generated extends Component
         ])
         ->when($this->searchVC, function($query) {
             $query->where(function($query) {
-            $query->where('hotspot_vouchers.code', 'like', '%' . $this->searchVC . '%')
-                    ->orWhere('hotspot_vouchers.batch_code', 'like', '%' . $this->searchVC . '%')
-                    ->orWhere('hotspot_profiles.name', 'like', '%' . $this->searchVC . '%');
+            $query->where('hotspot_vouchers.code', 'ilike', '%' . $this->searchVC . '%')
+                    ->orWhere('hotspot_vouchers.batch_code', 'ilike', '%' . $this->searchVC . '%')
+                    ->orWhere('hotspot_profiles.name', 'ilike', '%' . $this->searchVC . '%');
             });
         })
         ->select(
@@ -207,19 +244,19 @@ class Generated extends Component
         ->where('hotspot_vouchers.used_date',null)
         ->when($this->searchBATCH, function($query) {
             $query->where(function($query) {
-            $query->where('hotspot_vouchers.batch_code', 'like', '%' . $this->searchBATCH . '%')
-                    ->orWhere('hotspot_profiles.name', 'like', '%' . $this->searchBATCH . '%')
-                    ->orWhere('resellers.name', 'like', '%' . $this->searchBATCH . '%');
+            $query->where('hotspot_vouchers.batch_code', 'ilike', '%' . $this->searchBATCH . '%')
+                    ->orWhere('hotspot_profiles.name', 'ilike', '%' . $this->searchBATCH . '%')
+                    ->orWhere('resellers.name', 'ilike', '%' . $this->searchBATCH . '%');
             });
         })
         ->groupBy(
-            'generation_date',
-            'name',
-            'price',
-            'batch_code',
-            'reseller_name'
+            'hotspot_vouchers.generation_date',
+            'hotspot_profiles.name',
+            'hotspot_profiles.price',
+            'hotspot_vouchers.batch_code',
+            'resellers.name'
         )
-        ->orderBy('hotspot_vouchers.id','DESC')
+        ->orderBy('hotspot_vouchers.generation_date','DESC')
         ->paginate(10,['*'],'batch');
     }
 

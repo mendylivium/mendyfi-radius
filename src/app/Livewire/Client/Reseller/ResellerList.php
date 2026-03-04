@@ -16,7 +16,7 @@ class ResellerList extends Component
     use BasicHelper;
     use WithPagination;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = 'tailwind';
     
     public $searchStr = "";
 
@@ -152,16 +152,17 @@ class ResellerList extends Component
         $lastMonth = Carbon::now()->subMonth()->month;
 
         return Reseller::query()
-        ->select(
-            '*',
-            DB::raw("(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id) as total_sales"),
-            DB::raw("(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = '{$today}') as earnToday"),
-            DB::raw("(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = '{$yesterday}') as earnYesterday"),
-            DB::raw("(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) >= '{$currentWeekStart}' AND DATE(transact_date) <= '{$currentWeekEnd}' ) as earnThisWeek"),
-            DB::raw("(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND MONTH(transact_date) = '{$currentMonth}') as earnThisMonth"),
-            DB::raw("(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND MONTH(transact_date) = '{$lastMonth}') as earnLastMonth"),
-            DB::raw('(SELECT count(`id`) FROM hotspot_vouchers WHERE `connected` = true AND `reseller_id` = `resellers`.`id`) as active_vouchers'),
-            DB::raw('(SELECT count(`id`) FROM hotspot_vouchers WHERE `used_date` IS NULL AND `reseller_id` = `resellers`.`id`) as available_vouchers')
+        ->selectRaw(
+            '*, ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id) as total_sales, ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = ?) as "earnToday", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) = ?) as "earnYesterday", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND DATE(transact_date) >= ? AND DATE(transact_date) <= ?) as "earnThisWeek", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND EXTRACT(MONTH FROM transact_date) = ?) as "earnThisMonth", ' .
+            '(SELECT COALESCE(SUM(amount), 0) FROM sales_records WHERE reseller_id = resellers.id AND EXTRACT(MONTH FROM transact_date) = ?) as "earnLastMonth", ' .
+            '(SELECT count(id) FROM hotspot_vouchers WHERE connected = true AND reseller_id = resellers.id) as active_vouchers, ' .
+            '(SELECT count(id) FROM hotspot_vouchers WHERE used_date IS NULL AND reseller_id = resellers.id) as available_vouchers',
+            [$today, $yesterday, $currentWeekStart, $currentWeekEnd, $currentMonth, $lastMonth]
         )
         ->where(function($query){
             $query->where('user_id', $this->user->id);
@@ -169,11 +170,11 @@ class ResellerList extends Component
             if(!empty($this->searchStr)) {
                 $searchTerm = '%' . $this->searchStr . '%';
                 $query->where(function($q) use ($searchTerm) {
-                    $q->where('name', 'like', $searchTerm)
+                    $q->where('name', 'ilike', $searchTerm)
                       ->orWhere('id', '=', $this->searchStr)
-                      ->orWhere('email', 'like', $searchTerm)
-                      ->orWhere('mobile', 'like', $searchTerm)
-                      ->orWhere('address_name', 'like', $searchTerm);
+                      ->orWhere('email', 'ilike', $searchTerm)
+                      ->orWhere('mobile', 'ilike', $searchTerm)
+                      ->orWhere('address_name', 'ilike', $searchTerm);
                 });
             }
         })

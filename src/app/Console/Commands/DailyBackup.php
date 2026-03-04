@@ -54,7 +54,7 @@ class DailyBackup extends Command
         $dbUsername = env('DB_USERNAME');
         $dbHost = env('DB_HOST');
 
-        $command = "mysqldump -h $dbHost -u $dbUsername -p'$dbPassword' $centralDatabaseName  > /var/www/html/storage/app/backups/central/{$file}";
+        $command = "PGPASSWORD='$dbPassword' pg_dump -h $dbHost -U $dbUsername $centralDatabaseName > /var/www/html/storage/app/backups/central/{$file}";
         exec($command);
 
         $this->cleanupOldCentralBackups();
@@ -63,29 +63,30 @@ class DailyBackup extends Command
 
     protected function backupTenantDatabase($tenantId)
     {
-
-        
-        
         $databaseName = DB::connection()->getDatabaseName();
-
-        $prefix = config('tenancy.database.prefix');
         $time = now()->format("Y-m-d");
-        // return;
-        $file = "{$prefix}{$tenantId}_backup-{$time}.sql";
+
+        // Look up readable username for this tenant
+        $username = DB::connection(config('tenancy.database.central_connection'))
+            ->table('domains')
+            ->where('tenant_id', $tenantId)
+            ->value('username') ?? $tenantId;
+
+        $file = "{$username}_backup-{$time}.sql";
         $dbPassword = env('DB_PASSWORD');
         $dbUsername = env('DB_USERNAME');
         $dbHost = env('DB_HOST');
 
-        $command = "mysqldump -h $dbHost -u$dbUsername -p'$dbPassword' $databaseName > /var/www/html/storage/app/backups/tenants/{$file}";
+        $command = "PGPASSWORD='$dbPassword' pg_dump -h $dbHost -U $dbUsername $databaseName > /var/www/html/storage/app/backups/tenants/{$file}";
         exec($command);
 
         $this->cleanupOldTenantBackups();
-        $this->info("Database for tenant {$tenantId} backed up to $file");
+        $this->info("Database for tenant {$username} ({$tenantId}) backed up to $file");
     }
 
     protected function cleanupOldCentralBackups()
     {
-        $files = glob("/var/www/html/storage/app/backups/central/central_database_backup_*.sql");
+        $files = glob("/var/www/html/storage/app/backups/central/central_database_backup-*.sql");
     
         $sevenDaysAgo = now()->subDays(env('DB_BACKUP_INTERVAL', 7));
     
@@ -99,8 +100,7 @@ class DailyBackup extends Command
 
     protected function cleanupOldTenantBackups()
     {
-        $prefix = config('tenancy.database.prefix');
-        $files = glob("/var/www/html/storage/app/backups/tenants/{$prefix}*_backup_*.sql");
+        $files = glob("/var/www/html/storage/app/backups/tenants/*_backup-*.sql");
     
         $sevenDaysAgo = now()->subDays(env('DB_BACKUP_INTERVAL', 7));
     

@@ -1,7 +1,7 @@
 @props(['price', 'showCurrency' => false, 'currency' => ''])
 
 @if($price == 0)
-    <span class="price-free">FREE</span>
+    <span class="text-success text-xs font-semibold">FREE</span>
 @else
-    <span class="price-value">{{ $showCurrency ? $currency : '' }}{{ number_format($price, 2) }}</span>
+    <span class="font-mono font-semibold text-sm">{{ $showCurrency ? $currency : '' }}{{ number_format($price, 2) }}</span>
 @endif

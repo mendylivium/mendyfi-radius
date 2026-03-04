@@ -1,40 +1,46 @@
-<div class="row">
-    {{-- <div class="col-lg-6 d-none d-lg-block bg-login-image"></div> --}}
-    <div class="col-lg-12">
-        <div class="p-5">
-            <div class="text-center">
-                <h1 class="h4 text-gray-900 mb-4">Mendyfi | Admin Page</h1>
-            </div>
-            <form wire:submit.prevent="login">
-                <div class="form-group">
-                    <input type="text" class="form-control form-control-user" placeholder="Username"
-                        wire:model="username">
-                    @error('username')
-                        <span class="text text-xs text-block text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <input type="password" class="form-control form-control-user" wire:model="password"
-                        placeholder="Password">
-                    @error('password')
-                        <span class="text text-xs text-block text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <button class="btn btn-primary btn-user btn-block" type="submit">
-                    <span wire:loading>
-                        <li class="spinner-border spinner-border-sm"></li>
-                    </span>
-                    <span wire:loading.attr="hidden">Login</span>
+<div class="w-full max-w-md mx-auto">
 
-                </button>
-            </form>
-            <hr>
-            <div class="d-flex justify-content-center items-center">
-                <span class="text-xs">Copyright &copy; 2024 | Developed by <a href="//fb.me/mendylivium"
-                        target="_blank">Rommel
-                        Mendiola</a></span>
-            </div>
-
+    {{-- Header --}}
+    <div class="text-center mb-8">
+        <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <x-mary-icon name="o-shield-check" class="text-primary-content w-8 h-8" />
         </div>
+        <h1 class="text-2xl font-bold text-base-content">KareTech Solutions</h1>
+        <p class="text-sm text-base-content/60 mt-1 font-medium">Hotspot Manager Admin</p>
     </div>
+
+    {{-- Login form --}}
+    <x-mary-card shadow>
+        <form wire:submit.prevent="login" class="space-y-4">
+            <div>
+                <label class="label"><span class="label-text font-medium">Username</span></label>
+                <input type="text" wire:model="username" class="input input-bordered w-full"
+                    placeholder="Enter username">
+                @error('username')
+                    <p class="text-error text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="label"><span class="label-text font-medium">Password</span></label>
+                <input type="password" wire:model="password" class="input input-bordered w-full"
+                    placeholder="Enter password">
+                @error('password')
+                    <p class="text-error text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full gap-2">
+                <span wire:loading class="loading loading-spinner loading-sm"></span>
+                <span wire:loading.remove>Login</span>
+                <span wire:loading>Signing in...</span>
+            </button>
+        </form>
+    </x-mary-card>
+
+    {{-- Footer --}}
+    <p class="text-center text-xs text-base-content/40 mt-6">
+        Powered by <span class="font-medium text-base-content/60">KareTech Solutions</span>
+    </p>
+
 </div>

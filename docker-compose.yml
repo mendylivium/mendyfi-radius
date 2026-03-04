@@ -3,7 +3,7 @@ networks:
 
 services:
   app:
-    container_name: nginx
+    container_name: kt-hotspot-v2-nginx
     build:
       context: ./dockerfiles
       dockerfile: nginx.dockerfile
@@ -12,36 +12,173 @@ services:
         - GID=${GID:-1000}
     restart: unless-stopped
     ports:
-      - "8045:80"
-      - "8090:80"
+      - "127.0.0.1:8045:80"
     volumes:
-      - ./src:/var/www/html:delegated
+      - ./src:/var/www/html:ro
     depends_on:
-     - php
-     - redis
-     - mysql
+      php:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     networks:
       - laravel
-      
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
   mysql:
-    container_name: mysql
+    container_name: kt-hotspot-v2-mariadb
     image: mariadb:10.6
     restart: unless-stopped
-    tty: true
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-MENDYFI_DB}
       MYSQL_USER: ${DB_USERNAME:-mendyfi}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-db@mendyfi}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-db@mendyfi}
-      SERVICE_TAGS: dev
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      SERVICE_TAGS: production
       SERVICE_NAME: mysql
     volumes:
       - ./mysql:/var/lib/mysql
     networks:
       - laravel
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "--silent"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   php:
-    container_name: php
+    container_name: kt-hotspot-v2-php
+    build:
+      context: ./dockerfiles
+      dockerfile: php.root.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+    volumes:
+      - ./src:/var/www/html:ro
+      - ./backups:/var/www/html/storage/app/backups:ro
+      - php-logs:/var/log/php
+    networks:
+      - laravel
+    healthcheck:
+      test: ["CMD", "php", "-r", "echo 'ok';"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  redis:
+    container_name: kt-hotspot-v2-redis
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    networks:
+      - laravel
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--loglevel", "warning"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # One-shot containers: no restart, no resource limits needed
+  composer:
+    container_name: kt-hotspot-v2-composer
+    build:
+      context: ./dockerfiles
+      dockerfile: php.root.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    restart: "no"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - php
+    entrypoint: ["composer", "--ignore-platform-reqs"]
+    networks:
+      - laravel
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  artisan:
+    container_name: kt-hotspot-v2-artisan
+    build:
+      context: ./dockerfiles
+      dockerfile: php.root.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    restart: "no"
+    volumes:
+      - ./src:/var/www/html:ro
+      - ./backups:/var/www/html/storage/app/backups:ro
+      - php-logs:/var/log/php
+    entrypoint: ["php", "/var/www/html/artisan"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - laravel
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  scheduler:
+    container_name: kt-hotspot-v2-scheduler
     build:
       context: ./dockerfiles
       dockerfile: php.root.dockerfile
@@ -51,105 +188,54 @@ services:
     restart: unless-stopped
     volumes:
       - ./src:/var/www/html:ro
-      - ./backups:/var/www/html/storage/app/backups:ro
-    networks:
-      - laravel
-
-  # phpmyadmin:
-  #   container_name: phpmyadmin
-  #   image: phpmyadmin/phpmyadmin
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8081:80"
-  #   environment:
-  #     - PMA_HOST=mysql
-  #     - PMA_PORT=3306
-  #     - UPLOAD_LIMIT=100m
-  #   depends_on:
-  #     - mysql
-  #   networks:
-  #     - laravel
-
-  composer:
-    container_name: composer
-    build:
-      context: ./dockerfiles
-      dockerfile: php.root.dockerfile
-      args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
-    restart: unless-stopped
-    volumes:
-      - ./src:/var/www/html
+      - php-logs:/var/log/php
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        php /var/www/html/artisan queue:work &
+        php /var/www/html/artisan schedule:work
     depends_on:
-      - php
-    entrypoint: [ 'composer', '--ignore-platform-reqs' ]
-    networks:
-      - laravel
-
-  redis:
-    container_name: redis
-    image: redis:alpine
-    restart: unless-stopped
+      mysql:
+        condition: service_healthy
+      app:
+        condition: service_healthy
     networks:
       - laravel
     logging:
-      driver: none
-    command: ["redis-server", "--requirepass", "mendyfi"]
-
-  artisan:
-    container_name: artisan
-    build:
-      context: ./dockerfiles
-      dockerfile: php.root.dockerfile
-      args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
-    restart: unless-stopped
-    volumes:
-      - ./src:/var/www/html:delegated
-      - ./backups:/var/www/html/storage/app/backups:delegated
-    entrypoint: [ "php", "/var/www/html/artisan" ]
-    depends_on:
-      - mysql
-    networks:
-      - laravel
-
-  scheduler:
-    container_name: scheduler
-    build:
-      context: ./dockerfiles
-      dockerfile: php.root.dockerfile
-      args:
-        - UID=${UID:-1000}
-        - GID=${GID:-1000}
-    restart: unless-stopped
-    volumes:
-      - ./src:/var/www/html:delegated
-    entrypoint: ["/bin/sh","-c"]
-    command:
-    - |
-      php /var/www/html/artisan queue:work &
-      php /var/www/html/artisan schedule:work
-    depends_on:
-      - mysql
-      - app
-    networks:
-      - laravel
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   radius-php:
-    container_name: radius
+    container_name: kt-hotspot-v2-radius
     build:
       context: ./dockerfiles
-      #dockerfile: radius.dockerfile #Using Socket
-      dockerfile: swoole.dockerfile #Using Swoole
+      dockerfile: swoole.dockerfile
       args:
-        - SWOOLE=true #Set False if using Socket Only
+        - SWOOLE=true
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
       - "${RADIUS_AUTH_PORT:-1812}:1812/udp"
       - "${RADIUS_ACCT_PORT:-1813}:1813/udp"
     volumes:
       - ./dockerfiles/radius-php:/var/www:delegated
     networks:
       - laravel
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+volumes:
+  php-logs:

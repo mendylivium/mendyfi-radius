@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Print styles for voucher sheets */
+@media print {
+    /* Hide the UI shell */
+    [data-mary-main],
+    nav,
+    .drawer-side,
+    .navbar,
+    .toast-container,
+    #toast-container,
+    .no-print {
+        display: none !important;
+    }
+
+    .drawer-content {
+        margin-left: 0 !important;
+    }
+
+    /* Print-friendly base */
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12px;
+    }
+
+    /* Voucher print cards */
+    .voucher-print-card {
+        border: 1px solid #000;
+        padding: 8px 12px;
+        margin: 4px;
+        display: inline-block;
+        width: 200px;
+        font-family: monospace;
+        font-size: 11px;
+        page-break-inside: avoid;
+    }
+
+    .voucher-print-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    /* Clean table printing */
+    .table {
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        border: 1px solid #ccc;
+        padding: 4px 8px;
+    }
+}

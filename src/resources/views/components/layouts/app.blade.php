@@ -1,36 +1,52 @@
 @php
     $brandUser = auth()->user();
-    $primaryColor = $brandUser->primary_color ?? '#4e73df';
-    $secondaryColor = $brandUser->secondary_color ?? '#858796';
-    $sidebarColor = $brandUser->sidebar_color ?? '#4e73df';
-    $companyName = $brandUser->company_name ?? env('APP_NAME');
+    $companyName = $brandUser->company_name ?? config('app.name', 'Hotspot Manager');
     $logoPath = $brandUser->logo_path ?? null;
     $faviconPath = $brandUser->favicon_path ?? null;
+    $primaryColor = $brandUser->primary_color ?? '#2563eb';
+    $secondaryColor = $brandUser->secondary_color ?? '#7c3aed';
+    $accentColor = $brandUser->accent_color ?? '#059669';
+    $sidebarColor = $brandUser->sidebar_color ?? '#1e293b';
 
-    // Helper function to adjust color brightness
-    $adjustBrightness = function($hex, $steps) {
+    // Hex to oklch conversion for daisyUI 4 CSS variable overrides
+    $hexToOklch = function(string $hex) {
         $hex = ltrim($hex, '#');
-        $r = max(0, min(255, hexdec(substr($hex, 0, 2)) + $steps));
-        $g = max(0, min(255, hexdec(substr($hex, 2, 2)) + $steps));
-        $b = max(0, min(255, hexdec(substr($hex, 4, 2)) + $steps));
-        return sprintf('#%02x%02x%02x', $r, $g, $b);
+        if (strlen($hex) !== 6) return '50% 0 0';
+        $r = hexdec(substr($hex, 0, 2)) / 255;
+        $g = hexdec(substr($hex, 2, 2)) / 255;
+        $b = hexdec(substr($hex, 4, 2)) / 255;
+        $toLinear = fn($c) => $c <= 0.04045 ? $c / 12.92 : pow(($c + 0.055) / 1.055, 2.4);
+        $r = $toLinear($r); $g = $toLinear($g); $b = $toLinear($b);
+        $l = 0.4122214708 * $r + 0.5363325363 * $g + 0.0514459929 * $b;
+        $m = 0.2119034982 * $r + 0.6806995451 * $g + 0.1073969566 * $b;
+        $s = 0.0883024619 * $r + 0.2817188376 * $g + 0.6299787005 * $b;
+        $cbrt = fn($x) => $x >= 0 ? pow($x, 1/3) : -pow(-$x, 1/3);
+        $l = $cbrt($l); $m = $cbrt($m); $s = $cbrt($s);
+        $L = 0.2104542553 * $l + 0.7936177850 * $m - 0.0040720468 * $s;
+        $a = 1.9779984951 * $l - 2.4285922050 * $m + 0.4505937099 * $s;
+        $bv = 0.0259040371 * $l + 0.7827717662 * $m - 0.8086757660 * $s;
+        $C = sqrt($a * $a + $bv * $bv);
+        $H = ($C < 0.0001) ? 0 : atan2($bv, $a) * 180 / M_PI;
+        if ($H < 0) $H += 360;
+        return sprintf('%.4f%% %.6f %.6f', $L * 100, $C, $H);
     };
-
-    $sidebarDark = $adjustBrightness($sidebarColor, -30);
-    $primaryHover = $adjustBrightness($primaryColor, -15);
-    $primaryLinkHover = $adjustBrightness($primaryColor, -20);
+    $contrastOklch = function(string $hex) {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) !== 6) return '100% 0 0';
+        $r = hexdec(substr($hex, 0, 2)) / 255;
+        $g = hexdec(substr($hex, 2, 2)) / 255;
+        $b = hexdec(substr($hex, 4, 2)) / 255;
+        $luminance = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+        return $luminance > 0.55 ? '20% 0 0' : '100% 0 0';
+    };
 @endphp
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="kt-light">
 <head>
-
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="app-version" content="{{ config('app.version', '2.0.0') }}">
     <title>{{ $companyName }} | {{ $pageName ?? '' }}</title>
 
     @if($faviconPath)
@@ -38,291 +54,205 @@
         <link rel="shortcut icon" href="{{ Storage::url($faviconPath) }}" type="image/x-icon">
     @endif
 
-    <!-- Custom fonts for this template-->
-    <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Custom styles for this template-->
-    <link href="{{ asset('css/sb-admin-2.min.css') }}?v={{ filemtime(public_path('css/sb-admin-2.min.css')) }}" rel="stylesheet">
-    
-    <!-- UI/UX Refinements -->
-    <link href="{{ asset('css/custom.css') }}?v={{ filemtime(public_path('css/custom.css')) }}" rel="stylesheet">
-
-    <!-- Mobile Sidebar Fix (inline to bypass CSS caching) -->
-    <style>
-    @media (max-width: 991px) {
-        .sidebar { width: 0 !important; overflow: hidden !important; }
-        .sidebar.toggled { width: 14rem !important; overflow: visible !important; overflow-y: auto !important; }
-        .sidebar.toggled .nav-item .nav-link { display: block !important; width: 100% !important; text-align: left !important; padding: 0.75rem 1rem !important; }
-        .sidebar.toggled .nav-item .nav-link i { font-size: 0.85rem !important; margin-right: 0.25rem !important; }
-        .sidebar.toggled .nav-item .nav-link span { font-size: 0.85rem !important; display: inline !important; }
-        .sidebar.toggled .nav-item .collapse { position: relative !important; left: 0 !important; top: 0 !important; z-index: 1 !important; animation: none !important; -webkit-animation: none !important; margin: 0 0.5rem !important; }
-        .sidebar.toggled .nav-item .collapsing { display: block !important; transition: height 0.15s ease !important; position: relative !important; left: 0 !important; top: 0 !important; margin: 0 0.5rem !important; }
-        .sidebar.toggled .nav-item .nav-link[data-toggle="collapse"]::after { width: 1rem; text-align: center; float: right; font-weight: 900; content: '\f107'; font-family: 'Font Awesome 5 Free'; display: inline-block !important; }
-        .sidebar.toggled .nav-item .nav-link[data-toggle="collapse"].collapsed::after { content: '\f105'; }
-        .sidebar.toggled .sidebar-brand .sidebar-brand-text { display: inline !important; }
-        .sidebar.toggled .sidebar-heading { text-align: left !important; }
-
-        /* Sub-menu items blend with sidebar (not white popup) */
-        .sidebar.toggled .nav-item .collapse .collapse-inner,
-        .sidebar.toggled .nav-item .collapsing .collapse-inner {
-            background: rgba(255,255,255,0.1) !important;
-            border-radius: 0.35rem !important;
-            box-shadow: none !important;
-            padding: 0.5rem 0 !important;
-        }
-        .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item,
-        .sidebar.toggled .nav-item .collapsing .collapse-inner .collapse-item {
-            color: rgba(255,255,255,0.85) !important;
-            padding: 0.6rem 1rem !important;
-            font-size: 0.82rem !important;
-        }
-        .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item:hover,
-        .sidebar.toggled .nav-item .collapsing .collapse-inner .collapse-item:hover {
-            background: rgba(255,255,255,0.15) !important;
-            color: #fff !important;
-        }
-        .sidebar.toggled .nav-item .collapse .collapse-inner .collapse-item.active,
-        .sidebar.toggled .nav-item .collapsing .collapse-inner .collapse-item.active {
-            color: #fff !important;
-            font-weight: 700;
-            background: rgba(255,255,255,0.2) !important;
-        }
-    }
-    </style>
-
-    {{-- Dynamic Brand Colors --}}
-    <style>
-        :root {
-            --brand-primary: {{ $primaryColor }};
-            --brand-secondary: {{ $secondaryColor }};
-            --brand-sidebar: {{ $sidebarColor }};
-        }
-
-        /* Override primary colors */
-        .bg-gradient-primary {
-            background-color: var(--brand-sidebar) !important;
-            background-image: linear-gradient(180deg, var(--brand-sidebar) 10%, {{ $sidebarDark }} 100%) !important;
-        }
-
-        .sidebar .nav-item .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .sidebar .nav-item.active .nav-link,
-        .sidebar .nav-item .nav-link:hover {
-            color: #fff;
-        }
-
-        .btn-primary {
-            background-color: var(--brand-primary) !important;
-            border-color: var(--brand-primary) !important;
-        }
-
-        .btn-primary:hover {
-            background-color: {{ $primaryHover }} !important;
-            border-color: {{ $primaryHover }} !important;
-        }
-
-        .text-primary {
-            color: var(--brand-primary) !important;
-        }
-
-        a {
-            color: var(--brand-primary);
-        }
-
-        a:hover {
-            color: {{ $primaryLinkHover }};
-        }
-
-        .border-left-primary {
-            border-left-color: var(--brand-primary) !important;
-        }
-
-        .badge-primary {
-            background-color: var(--brand-primary) !important;
-        }
-
-        .page-item.active .page-link {
-            background-color: var(--brand-primary) !important;
-            border-color: var(--brand-primary) !important;
-        }
-
-        .page-link {
-            color: var(--brand-primary);
-        }
-
-        .card-header {
-            border-bottom-color: var(--brand-primary);
-        }
-
-        /* Secondary color overrides */
-        .text-secondary {
-            color: var(--brand-secondary) !important;
-        }
-
-        .btn-secondary {
-            background-color: var(--brand-secondary) !important;
-            border-color: var(--brand-secondary) !important;
-        }
-
-        /* Custom scrollbar for sidebar */
-        .sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        /* Brand logo in sidebar */
-        .sidebar-brand-icon img {
-            max-height: 40px;
-            max-width: 40px;
-        }
-    </style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
     @stack('styles')
-    @stack('scripts-top')
+
+    {{-- Accessibility: skip-to-content link for keyboard/screen reader users --}}
+    <style>
+        .skip-to-content {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            z-index: 9999;
+            padding: 0.75rem 1.5rem;
+            background: var(--p, oklch(50% 0.2 260));
+            color: white;
+            font-weight: 600;
+            border-radius: 0 0 0.5rem 0;
+        }
+        .skip-to-content:focus {
+            left: 0;
+        }
+    </style>
+
+    @if($brandUser)
+    <style>
+        [data-theme="kt-light"],
+        [data-theme="kt-dark"] {
+            --p: {{ $hexToOklch($primaryColor) }};
+            --pc: {{ $contrastOklch($primaryColor) }};
+            --s: {{ $hexToOklch($secondaryColor) }};
+            --sc: {{ $contrastOklch($secondaryColor) }};
+            --a: {{ $hexToOklch($accentColor) }};
+            --ac: {{ $contrastOklch($accentColor) }};
+        }
+        .sidebar-brand {
+            background: linear-gradient(180deg, {{ $sidebarColor }} 0%, {{ $sidebarColor }}dd 100%);
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .sidebar-brand a { color: inherit; }
+        .sidebar-brand .border-base-300 { border-color: rgba(255, 255, 255, 0.1); }
+        .sidebar-brand [data-menu-item]:hover { background: rgba(255, 255, 255, 0.1); }
+
+        /* Fix: daisyUI drawer height=100svh ignores sticky nav above it.
+           Mary UI with-nav only adjusts sidebar overlay, not the drawer container.
+           .drawer-content needs overflow-y:auto so the page content scrolls. */
+        main .drawer {
+            height: calc(100dvh - 53px) !important;
+        }
+        main .drawer .drawer-content {
+            height: calc(100dvh - 53px) !important;
+            overflow-y: auto !important;
+        }
+
+        /* ── Consistent form element rounding ──
+           @tailwindcss/forms plugin overrides daisyUI border-radius.
+           Force all form elements to use daisyUI's --rounded-btn (0.5rem). */
+        .input, .select, .textarea, .file-input,
+        input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], input[type="search"], input[type="tel"],
+        input[type="url"], input[type="date"], input[type="datetime-local"],
+        select, textarea {
+            border-radius: var(--rounded-btn, 0.5rem) !important;
+        }
+
+        /* ── Touch-friendly form elements (min 44px target) ── */
+        .input, .select, .textarea, .file-input,
+        .btn, button, [role="button"],
+        input[type="text"], input[type="email"], input[type="password"],
+        input[type="number"], select, textarea {
+            min-height: 2.75rem; /* 44px */
+        }
+        .btn-xs, .btn-sm { min-height: 2rem; }
+
+        /* ── Consistent card rounding ── */
+        .card, .alert, .stats {
+            border-radius: var(--rounded-box, 0.75rem) !important;
+        }
+
+        /* ── Mobile table improvements ── */
+        @media (max-width: 640px) {
+            .table { font-size: 0.8125rem; }
+            .table th, .table td { padding: 0.5rem 0.375rem; }
+            .badge { font-size: 0.6875rem; }
+        }
+
+        /* ── Mary UI input group fix: ensure icon prefix matches input rounding ── */
+        .input-group, [data-mary-input] {
+            border-radius: var(--rounded-btn, 0.5rem) !important;
+            overflow: hidden;
+        }
+
+        /* ── Checkbox/radio touch targets ── */
+        .checkbox, .radio, .toggle {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        label:has(.checkbox), label:has(.radio), label:has(.toggle) {
+            min-height: 2.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ── Accessibility: focus-visible outlines ──
+           Keyboard users see a clear ring; mouse users do not. */
+        :focus-visible {
+            outline: 2px solid oklch(65% 0.25 260);
+            outline-offset: 2px;
+            border-radius: 0.25rem;
+        }
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* ── Accessibility: color contrast improvements ──
+           WCAG AA requires 4.5:1 for normal text.
+           /40 opacity on light bg fails; bump to /55 minimum. */
+        .text-base-content\/40 {
+            color: oklch(from var(--bc) l c h / 0.55) !important;
+        }
+
+        /* ── Accessibility: respect reduced motion preference ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ── Mobile font scaling: prevent iOS zoom on focus ── */
+        @media (max-width: 640px) {
+            input, select, textarea {
+                font-size: 1rem !important; /* 16px prevents iOS auto-zoom */
+            }
+        }
+
+        /* ── Accessibility: ensure links/interactive elements are distinguishable ── */
+        a:not(.btn):not([class*="badge"]) {
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
+        }
+
+        /* ── Active/selection state for table rows ── */
+        .table tr.active-row {
+            background-color: oklch(from var(--p) l c h / 0.08);
+        }
+    </style>
+    @endif
 </head>
+<body class="min-h-screen bg-base-100 font-sans antialiased">
 
-<body id="page-top">
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <div id="wrapper">
-        <x-partials.navigation-side :logo-path="$logoPath" :company-name="$companyName" />
-        <div id="content-wrapper" class="d-flex flex-column">
-            <!-- Main Content -->
-            <div id="content">
-                <x-partials.navigation-top :logo-path="$logoPath" :company-name="$companyName" />
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
+    {{-- Accessibility: skip navigation for keyboard/screen reader users --}}
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-                    <!-- Page Heading -->
-                    <h6 class="small mb-4 text-gray-800">HOME
-                        @foreach ($links ?? [] as $link)
-                            / {{ strtoupper($link) }}
-                        @endforeach
-                    </h6>
-                    {{ $slot }}
-                </div>
-                <!-- /.container-fluid -->
-            </div>
-            <!-- End of Main Content -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; {{ date('Y') }} {{ $companyName }} | Powered by <a href="//fb.me/mendylivium" target="_blank">MendyFi</a></span>
+    {{-- Top navbar: rendered outside <x-mary-main> because Main component has no navbar slot --}}
+    <x-mary-nav sticky full-width class="shadow-sm" role="navigation" aria-label="Main navigation">
+        <x-slot:brand>
+            @include('components.partials.navigation-top')
+        </x-slot:brand>
+    </x-mary-nav>
+
+    <x-mary-main :full-width="false" with-nav>
+
+        <x-slot:sidebar drawer="main-drawer" class="sidebar-brand lg:sidebar-brand border-r border-base-300">
+            {{-- Logo / Brand --}}
+            <div class="p-4 border-b border-white/10">
+                <a href="{{ tenant() ? route('client.dashboard') : route('admin.dashboard') }}" class="flex items-center gap-3 no-underline">
+                    <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        @if($logoPath)
+                            <img src="{{ Storage::url($logoPath) }}" alt="Logo" class="w-7 h-7 object-contain rounded-lg">
+                        @else
+                            <x-mary-icon name="o-wifi" class="text-white w-5 h-5" />
+                        @endif
                     </div>
-                </div>
+                    <div class="min-w-0">
+                        <p class="font-bold text-white text-sm leading-tight truncate">{{ $companyName }}</p>
+                        <p class="text-xs text-white/60">Management Console</p>
+                    </div>
+                </a>
+            </div>
+
+            @include('components.partials.navigation-side')
+        </x-slot:sidebar>
+
+        <x-slot:content class="!p-2 lg:!px-8 lg:!py-5">
+            <div id="main-content" class="max-w-7xl mx-auto w-full" role="main">
+                @include('components.partials.flash')
+                {{ $slot }}
+            </div>
+            <footer class="mt-auto border-t border-base-300 py-4 px-6 text-center text-xs text-base-content/40">
+                <p>{{ $companyName }} &mdash; Powered by <span class="font-medium text-base-content/60">KareTech Solutions</span></p>
             </footer>
-        </div>
-    </div>
-    <!-- Bootstrap core JavaScript-->
-    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        </x-slot:content>
 
-    <!-- Core plugin JavaScript-->
-    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    </x-mary-main>
 
-    <!-- Custom scripts for all pages-->
-    <script src="{{ asset('js/sb-admin-2.min.js') }}?v={{ filemtime(public_path('js/sb-admin-2.min.js')) }}"></script>
-    
-    <!-- Mobile sidebar toggle fix (inline to bypass JS caching) -->
-    <script>
-    (function(){
-        // On mobile, SB Admin 2 default: sidebar visible at 6.5rem, toggled=hidden.
-        // We invert: default=hidden (CSS width:0), toggled=visible (14rem).
-        // On page load for mobile, ensure sidebar starts without .toggled (hidden).
-        if (window.innerWidth <= 991) {
-            var sb = document.querySelector('.sidebar');
-            if (sb) sb.classList.remove('toggled');
-            document.body.classList.remove('sidebar-toggled');
-        }
-    })();
-    </script>
-    
-    <!-- Mobile Responsiveness Helpers -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var sidebar = document.querySelector('.sidebar');
-        var overlay = document.getElementById('sidebarOverlay');
-        var sidebarToggle = document.getElementById('sidebarToggle');
-        var sidebarToggleTop = document.getElementById('sidebarToggleTop');
-        
-        function isMobile() {
-            return window.innerWidth <= 991;
-        }
-        
-        function closeSidebar() {
-            if (sidebar) {
-                // On mobile, SB Admin 2 logic is inverted: toggled = visible
-                // We need to remove 'toggled' to hide
-                sidebar.classList.remove('toggled');
-                document.body.classList.remove('sidebar-toggled');
-            }
-            if (overlay) {
-                overlay.classList.remove('show');
-            }
-        }
-        
-        function updateOverlay() {
-            if (!isMobile() || !overlay) return;
-            // On mobile: sidebar.toggled = visible
-            if (sidebar && sidebar.classList.contains('toggled')) {
-                overlay.classList.add('show');
-            } else {
-                overlay.classList.remove('show');
-            }
-        }
-        
-        // Watch for toggle button clicks
-        [sidebarToggle, sidebarToggleTop].forEach(function(btn) {
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    setTimeout(updateOverlay, 50);
-                });
-            }
-        });
-        
-        // Close sidebar when clicking overlay
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                closeSidebar();
-            });
-        }
-        
-        // Close sidebar when a non-collapsible nav link is clicked on mobile
-        document.querySelectorAll('.sidebar .nav-link:not([data-toggle="collapse"])').forEach(function(link) {
-            link.addEventListener('click', function() {
-                if (isMobile()) {
-                    closeSidebar();
-                }
-            });
-        });
-        
-        // Close sidebar when a collapse sub-item is clicked on mobile
-        document.querySelectorAll('.sidebar .collapse-item').forEach(function(item) {
-            item.addEventListener('click', function() {
-                if (isMobile()) {
-                    closeSidebar();
-                }
-            });
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (!isMobile() && overlay) {
-                overlay.classList.remove('show');
-            }
-        });
-    });
-    </script>
+    <x-mary-toast />
+    @livewireScripts
     @stack('scripts-bottom')
 </body>
-
 </html>

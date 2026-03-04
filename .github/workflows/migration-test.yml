@@ -1,0 +1,74 @@
+name: Migration Test
+
+on:
+  push:
+    paths:
+      - 'migration/**'
+      - '.github/workflows/migration-test.yml'
+  pull_request:
+    paths:
+      - 'migration/**'
+      - '.github/workflows/migration-test.yml'
+
+jobs:
+  test-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mysql:
+        # Use 5.7: pgloader's qmynd driver only supports mysql_native_password.
+        # MySQL 5.7 uses mysql_native_password by default, avoiding the
+        # caching_sha2_password introduced in MySQL 8.0.4+.
+        # The production app targets MySQL 8 but migration testing uses 5.7
+        # to isolate the auth compatibility issue from pgloader.
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_USER: mendyfi
+          MYSQL_PASSWORD: mendyfi_test
+          MYSQL_DATABASE: mendyfi_central
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -ptest"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Seed MySQL with test data
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -u root -ptest < migration/seed-test-data.sql
+
+      - name: Create .env for migration
+        run: |
+          printf 'DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=mendyfi_central\nDB_USERNAME=root\nDB_PASSWORD=test\n' > .env
+
+      - name: Run migration dry-run first
+        run: ./migration/migrate.sh --dry-run
+
+      - name: Run migration
+        env:
+          PG_USER: mendyfi
+          PG_PASS: mendyfi_test_pg
+          CI_MODE: "true"
+        run: ./migration/migrate.sh --ci-mode --pg-port 5433
+
+      - name: Verify PostgreSQL databases exist
+        run: |
+          cd migration && docker compose -f docker-compose.migrate.yml exec -T postgres \
+            psql -U mendyfi -d mendyfi_central -c "SELECT COUNT(*) FROM tenants;"
+
+      - name: Verify tenant databases
+        run: |
+          cd migration && docker compose -f docker-compose.migrate.yml exec -T postgres \
+            psql -U mendyfi -l | grep mendyfi_tenant
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd migration && docker compose -f docker-compose.migrate.yml down -v 2>/dev/null || true

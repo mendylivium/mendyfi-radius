@@ -1,0 +1,51 @@
+name: mendyfi-migration
+
+services:
+  # pgloader is not run via compose -- migrate.sh runs it with docker run --network host
+  # so it can reach both MySQL and PostgreSQL via the host loopback (127.0.0.1).
+  # This service definition is kept as documentation / fallback only.
+  pgloader:
+    image: dimitri/pgloader:v3.6.7
+    volumes:
+      - ./pgloader.load:/migration/pgloader.load:ro
+    networks:
+      - migrate-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - migrate
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${PG_USER:-mendyfi}
+      POSTGRES_PASSWORD: ${PG_PASS:-changeme_migrate}
+      POSTGRES_DB: mendyfi_central
+    volumes:
+      - pg-migrate-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${PG_MIGRATE_PORT:-5433}:5432"
+    networks:
+      - migrate-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-mendyfi}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  migrate-net:
+    driver: bridge
+
+volumes:
+  pg-migrate-data:

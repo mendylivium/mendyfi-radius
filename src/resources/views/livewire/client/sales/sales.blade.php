@@ -1,256 +1,263 @@
-<div class="row">
-    <div class="col-12">
-        <x-partials.flash />
-    </div>
-    <div class="col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header card-header-standard">
-                <h6 class="card-title">
-                    <i class="fas fa-chart-line"></i>Hotspot Sales Report
-                    <span class="badge badge-success">{{ $this->sales->total() }} records</span>
-                </h6>
-                <div class="card-actions">
-                    <button class="btn btn-action btn-action-export" wire:click="exportCsv">
-                        <i class="fas fa-download"></i>Export CSV
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                {{-- Filters Section --}}
-                <div class="row mb-4 filter-row">
-                    <div class="col-md-2">
-                        <label class="info-label">Date Range</label>
-                        <select wire:model.live="dateRange" class="form-control form-control-sm">
-                            <option value="all">All Time</option>
-                            <option value="today">Today</option>
-                            <option value="yesterday">Yesterday</option>
-                            <option value="this_week">This Week</option>
-                            <option value="last_week">Last Week</option>
-                            <option value="this_month">This Month</option>
-                            <option value="last_month">Last Month</option>
-                            <option value="custom">Custom Range</option>
-                        </select>
-                    </div>
-                    
-                    @if($dateRange === 'custom')
-                    <div class="col-md-2">
-                        <label class="info-label">From</label>
-                        <input type="date" wire:model.live="dateFrom" class="form-control form-control-sm">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="info-label">To</label>
-                        <input type="date" wire:model.live="dateTo" class="form-control form-control-sm">
-                    </div>
-                    @endif
+<div class="space-y-4">
 
-                    <div class="col-md-2">
-                        <label class="info-label">Profile</label>
-                        <select wire:model.live="profileFilter" class="form-control form-control-sm">
-                            <option value="">All Profiles</option>
-                            @foreach($this->profiles as $profile)
-                                <option value="{{ $profile->id }}">{{ $profile->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="info-label">Reseller</label>
-                        <select wire:model.live="resellerFilter" class="form-control form-control-sm">
-                            <option value="">All Resellers</option>
-                            @foreach($this->resellers as $reseller)
-                                <option value="{{ $reseller->id }}">{{ $reseller->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="info-label">Search</label>
-                        <input type="text" wire:model.live.debounce.300ms="search" 
-                            class="form-control form-control-sm" 
-                            placeholder="Code, MAC, IP...">
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button wire:click="clearFilters" class="btn btn-action btn-action-view">
-                            <i class="fas fa-times"></i>Clear
-                        </button>
-                    </div>
-                </div>
-
-                {{-- Summary Cards --}}
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card bg-gradient-primary text-white">
-                            <div class="card-body py-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-xs text-white-50">Total Transactions</div>
-                                        <div class="h4 mb-0">{{ number_format($this->salesTotals->total_count ?? 0) }}</div>
-                                    </div>
-                                    <i class="fas fa-receipt fa-2x text-white-50"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card bg-gradient-success text-white">
-                            <div class="card-body py-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="text-xs text-white-50">Total Revenue</div>
-                                        <div class="h4 mb-0">{{ number_format($this->salesTotals->total_amount ?? 0, 2) }}</div>
-                                    </div>
-                                    <i class="fas fa-money-bill-wave fa-2x text-white-50"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Mobile Card View --}}
-                <div class="mobile-card-view">
-                    @forelse ($this->sales as $sale)
-                        <div class="voucher-card-mobile">
-                            <div class="card-header-mobile">
-                                <span class="voucher-code">{{ $sale->code }}</span>
-                                <div class="d-flex align-items-center">
-                                    <x-partials.profile-badge 
-                                        :name="$sale->profile_name ?? 'N/A'" 
-                                        :uptime-limit="$sale->uptime_limit ?? 0"
-                                        :data-limit="$sale->data_limit ?? 0" />
-                                </div>
-                            </div>
-                            <div class="card-body-mobile">
-                                <div class="data-item">
-                                    <span class="data-label">Reseller</span>
-                                    <span class="data-value">
-                                        @if($sale->reseller_name)
-                                            <span class="badge badge-info">{{ $sale->reseller_name }}</span>
-                                        @else
-                                            <span class="info-value-muted">Direct</span>
-                                        @endif
-                                    </span>
-                                </div>
-                                <div class="data-item">
-                                    <span class="data-label">Session Info</span>
-                                    <span class="data-value">
-                                        <small>
-                                            {{ $this->isRandomMac($sale->mac_address) ? 'Random ' : '' }}MAC: {{ $sale->mac_address ?? 'N/A' }}<br>
-                                            IP: {{ $sale->ip_address ?? 'N/A' }}<br>
-                                            Router: {{ $sale->router_ip ?? 'N/A' }}{{ $sale->server_name ? " - {$sale->server_name}" : '' }}
-                                        </small>
-                                    </span>
-                                </div>
-                                <div class="data-item">
-                                    <span class="data-label">Price</span>
-                                    <span class="data-value">
-                                        <x-partials.price-display :price="$sale->amount" />
-                                    </span>
-                                </div>
-                                <div class="data-item">
-                                    <span class="data-label">Date</span>
-                                    <span class="data-value" style="font-size: 0.8rem;">
-                                        {{ Illuminate\Support\Carbon::parse($sale->transact_date)->format('M d, Y h:i A') }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="table-empty-state">
-                            <i class="fas fa-chart-line"></i>
-                            <p>No sales records found</p>
-                        </div>
-                    @endforelse
-                    
-                    {{-- Mobile Page Total --}}
-                    @if($this->sales->count() > 0)
-                    <div class="card mt-3" style="background: #f8f9fc; border: 1px solid #e3e6f0;">
-                        <div class="card-body py-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <strong class="info-label">Page Total:</strong>
-                                <span class="price-value font-weight-bold">{{ number_format($this->sales->sum('amount'), 2) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-
-                {{-- Desktop Table View --}}
-                <div class="table-responsive desktop-table-view">
-                    <table class="table table-standard table-striped">
-                        <thead>
-                            <tr>
-                                <th>Voucher Code</th>
-                                <th>Profile</th>
-                                <th>Reseller</th>
-                                <th class="hide-mobile">Session</th>
-                                <th>Price</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($this->sales as $sale)
-                                <tr>
-                                    <td>
-                                        <span class="info-value font-weight-bold">{{ $sale->code }}</span>
-                                    </td>
-                                    <td>
-                                        <x-partials.profile-badge 
-                                            :name="$sale->profile_name ?? 'N/A'" 
-                                            :uptime-limit="$sale->uptime_limit ?? 0"
-                                            :data-limit="$sale->data_limit ?? 0" />
-                                    </td>
-                                    <td>
-                                        @if($sale->reseller_name)
-                                            <span class="badge badge-info">{{ $sale->reseller_name }}</span>
-                                        @else
-                                            <span class="info-value-muted">Direct</span>
-                                        @endif
-                                    </td>
-                                    <td class="hide-mobile">
-                                        <small>
-                                            <span class="info-label">{{ $this->isRandomMac($sale->mac_address) ? 'Random ' : '' }}MAC:</span> {{ $sale->mac_address ?? 'N/A' }}<br>
-                                            <span class="info-label">IP:</span> {{ $sale->ip_address ?? 'N/A' }}<br>
-                                            <span class="info-label">Router:</span> {{ $sale->router_ip ?? 'N/A' }}{{ $sale->server_name ? " - {$sale->server_name}" : '' }}
-                                        </small>
-                                    </td>
-                                    <td class="text-right">
-                                        <x-partials.price-display :price="$sale->amount" />
-                                    </td>
-                                    <td>
-                                        {{ Illuminate\Support\Carbon::parse($sale->transact_date)->format('M d, Y h:i A') }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="table-empty-state">
-                                        <i class="fas fa-chart-line"></i>
-                                        <p>No sales records found</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                        @if($this->sales->count() > 0)
-                        <tfoot style="background: #f8f9fc;">
-                            <tr>
-                                <td colspan="4" class="text-right font-weight-bold info-label">Page Total:</td>
-                                <td class="text-right"><span class="price-value font-weight-bold">{{ number_format($this->sales->sum('amount'), 2) }}</span></td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                        @endif
-                    </table>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <div class="info-value-muted small">
-                        Showing {{ $this->sales->firstItem() ?? 0 }} to {{ $this->sales->lastItem() ?? 0 }} 
-                        of {{ $this->sales->total() }} entries
-                    </div>
-                    <div>
-                        {{ $this->sales->links() }}
-                    </div>
-                </div>
-            </div>
+    {{-- Page header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+            <h2 class="text-xl font-bold text-base-content">Sales Report</h2>
+            <p class="text-sm text-base-content/60">Hotspot transaction history
+                <span class="badge badge-primary badge-sm ml-1">{{ $this->sales->total() }} records</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('client.sales.report', array_filter([
+                'dateRange' => $dateRange,
+                'dateFrom' => $dateFrom,
+                'dateTo' => $dateTo,
+                'profileFilter' => $profileFilter,
+                'resellerFilter' => $resellerFilter,
+            ])) }}"
+               target="_blank"
+               class="btn btn-primary btn-sm gap-1.5">
+                <x-mary-icon name="o-document-chart-bar" class="w-4 h-4" />
+                <span class="hidden sm:inline">Export Report</span>
+            </a>
+            <button class="btn btn-outline btn-sm gap-1.5" wire:click="exportCsv">
+                <x-mary-icon name="o-arrow-down-tray" class="w-4 h-4" />
+                <span class="hidden sm:inline">Export CSV</span>
+            </button>
         </div>
     </div>
+
+    {{-- Filters --}}
+    <x-mary-card shadow>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-base-content/60 font-medium">Date Range</label>
+                <select wire:model.live="dateRange" class="select select-bordered select-sm w-full">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="this_week">This Week</option>
+                    <option value="last_week">Last Week</option>
+                    <option value="this_month">This Month</option>
+                    <option value="last_month">Last Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+
+            @if($dateRange === 'custom')
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-base-content/60 font-medium">From</label>
+                <input type="date" wire:model.live="dateFrom" class="input input-bordered input-sm w-full">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-base-content/60 font-medium">To</label>
+                <input type="date" wire:model.live="dateTo" class="input input-bordered input-sm w-full">
+            </div>
+            @endif
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-base-content/60 font-medium">Profile</label>
+                <select wire:model.live="profileFilter" class="select select-bordered select-sm w-full">
+                    <option value="">All Profiles</option>
+                    @foreach($this->profiles as $profile)
+                        <option value="{{ $profile->id }}">{{ $profile->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-base-content/60 font-medium">Reseller</label>
+                <select wire:model.live="resellerFilter" class="select select-bordered select-sm w-full">
+                    <option value="">All Resellers</option>
+                    @foreach($this->resellers as $reseller)
+                        <option value="{{ $reseller->id }}">{{ $reseller->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-base-content/60 font-medium">Search</label>
+                <div class="relative">
+                    <x-mary-icon name="o-magnifying-glass" class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-base-content/40 pointer-events-none" />
+                    <input type="search" wire:model.live.debounce.300ms="search"
+                        class="input input-bordered input-sm w-full pl-8"
+                        placeholder="Code, MAC, IP...">
+                </div>
+            </div>
+
+            <div class="flex items-end">
+                <button wire:click="clearFilters" class="btn btn-ghost btn-sm gap-1.5 w-full">
+                    <x-mary-icon name="o-x-mark" class="w-4 h-4" />
+                    Clear
+                </button>
+            </div>
+
+        </div>
+    </x-mary-card>
+
+    {{-- Summary stats --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <x-mary-stat
+            title="Total Transactions"
+            :value="number_format($this->salesTotals->total_count ?? 0)"
+            icon="o-receipt-percent"
+            class="bg-base-100 shadow-sm"
+            color="text-primary" />
+
+        <x-mary-stat
+            title="Total Revenue"
+            :value="number_format($this->salesTotals->total_amount ?? 0, 2)"
+            icon="o-banknotes"
+            class="bg-base-100 shadow-sm"
+            color="text-success" />
+    </div>
+
+    <x-mary-card shadow>
+        @if($this->sales->count() > 0)
+
+        {{-- Mobile card view --}}
+        <div class="md:hidden space-y-3">
+            @forelse ($this->sales as $sale)
+                <div class="border border-base-300 rounded-xl overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-2.5 bg-base-200/50">
+                        <span class="font-mono font-bold text-sm">{{ $sale->code }}</span>
+                        <x-partials.profile-badge
+                            :name="$sale->profile_name ?? 'N/A'"
+                            :uptime-limit="$sale->uptime_limit ?? 0"
+                            :data-limit="$sale->data_limit ?? 0" />
+                    </div>
+                    <div class="divide-y divide-base-200 px-4">
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-xs text-base-content/60">Reseller</span>
+                            <span class="text-sm">
+                                @if($sale->reseller_name)
+                                    <span class="badge badge-info badge-sm">{{ $sale->reseller_name }}</span>
+                                @else
+                                    <span class="text-base-content/40 text-xs">Direct</span>
+                                @endif
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-start py-2">
+                            <span class="text-xs text-base-content/60">Session</span>
+                            <span class="text-xs text-right leading-relaxed">
+                                {{ $this->isRandomMac($sale->mac_address) ? 'Random ' : '' }}MAC: {{ $sale->mac_address ?? 'N/A' }}<br>
+                                IP: {{ $sale->ip_address ?? 'N/A' }}<br>
+                                Router: {{ $sale->router_ip ?? 'N/A' }}{{ $sale->server_name ? " - {$sale->server_name}" : '' }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-xs text-base-content/60">Price</span>
+                            <span class="font-mono font-semibold text-sm">
+                                <x-partials.price-display :price="$sale->amount" />
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-xs text-base-content/60">Date</span>
+                            <span class="text-xs">
+                                {{ Illuminate\Support\Carbon::parse($sale->transact_date)->format('M d, Y h:i A') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="flex flex-col items-center justify-center py-16 text-base-content/40">
+                    <x-mary-icon name="o-chart-bar" class="w-12 h-12 mb-3" />
+                    <p class="text-sm">No sales records found</p>
+                </div>
+            @endforelse
+
+            {{-- Mobile page total --}}
+            <div class="flex justify-between items-center px-4 py-3 bg-base-200/50 rounded-xl border border-base-300">
+                <span class="text-xs font-medium text-base-content/60 uppercase tracking-wide">Page Total</span>
+                <span class="font-mono font-semibold">{{ number_format($this->sales->sum('amount'), 2) }}</span>
+            </div>
+        </div>
+
+        {{-- Desktop table view --}}
+        <div class="hidden md:block overflow-x-auto">
+            <table class="table table-sm" aria-label="Sales records">
+                <thead>
+                    <tr class="text-base-content/70 text-xs uppercase">
+                        <th>Voucher Code</th>
+                        <th>Profile</th>
+                        <th>Reseller</th>
+                        <th>Session</th>
+                        <th class="text-right">Price</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($this->sales as $sale)
+                        <tr class="hover">
+                            <td>
+                                <span class="font-mono font-bold text-sm">{{ $sale->code }}</span>
+                            </td>
+                            <td>
+                                <x-partials.profile-badge
+                                    :name="$sale->profile_name ?? 'N/A'"
+                                    :uptime-limit="$sale->uptime_limit ?? 0"
+                                    :data-limit="$sale->data_limit ?? 0" />
+                            </td>
+                            <td>
+                                @if($sale->reseller_name)
+                                    <span class="badge badge-info badge-sm">{{ $sale->reseller_name }}</span>
+                                @else
+                                    <span class="text-base-content/40 text-xs">Direct</span>
+                                @endif
+                            </td>
+                            <td class="text-xs text-base-content/70 leading-relaxed">
+                                <div><span class="text-base-content/40">{{ $this->isRandomMac($sale->mac_address) ? 'Random ' : '' }}MAC:</span> {{ $sale->mac_address ?? 'N/A' }}</div>
+                                <div><span class="text-base-content/40">IP:</span> {{ $sale->ip_address ?? 'N/A' }}</div>
+                                <div><span class="text-base-content/40">Router:</span> {{ $sale->router_ip ?? 'N/A' }}{{ $sale->server_name ? " - {$sale->server_name}" : '' }}</div>
+                            </td>
+                            <td class="text-right">
+                                <span class="font-mono font-semibold">
+                                    <x-partials.price-display :price="$sale->amount" />
+                                </span>
+                            </td>
+                            <td class="text-xs text-base-content/70">
+                                {{ Illuminate\Support\Carbon::parse($sale->transact_date)->format('M d, Y h:i A') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6">
+                                <div class="flex flex-col items-center justify-center py-16 text-base-content/40">
+                                    <x-mary-icon name="o-chart-bar" class="w-12 h-12 mb-3" />
+                                    <p class="text-sm">No sales records found</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                <tfoot class="bg-base-200/50">
+                    <tr>
+                        <td colspan="4" class="text-right text-xs font-medium text-base-content/60 uppercase tracking-wide">Page Total</td>
+                        <td class="text-right">
+                            <span class="font-mono font-semibold">{{ number_format($this->sales->sum('amount'), 2) }}</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        {{-- Pagination --}}
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-2 mt-4 text-sm text-base-content/60">
+            <span>Showing {{ $this->sales->firstItem() ?? 0 }}–{{ $this->sales->lastItem() ?? 0 }} of {{ $this->sales->total() }} entries</span>
+            {{ $this->sales->links() }}
+        </div>
+
+        @else
+
+        <div class="flex flex-col items-center justify-center py-16 text-base-content/40">
+            <x-mary-icon name="o-chart-bar" class="w-12 h-12 mb-3" />
+            <p class="text-sm">No sales records found</p>
+        </div>
+
+        @endif
+    </x-mary-card>
+
 </div>
